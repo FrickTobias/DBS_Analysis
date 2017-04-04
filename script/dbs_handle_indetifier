@@ -72,7 +72,7 @@ def foreachRead(readpair):
 
     # global name self not defined, do I need to import it somehow?
     #if self.analysisfolder.settings.type == 'ChIB':
-    #readpair.xyz_ID_identifier()
+    readpair.xyz_ID_identifier()
 
     #readpair.makeColoredOut() # removed this to speed things up, should be able to run if comment is removed.
     readpair.fixInsert()
