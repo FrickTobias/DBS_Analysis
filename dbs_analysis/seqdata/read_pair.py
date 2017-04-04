@@ -130,6 +130,7 @@ class ReadPair(object):
         
         if self.analysisfolder.settings.type == 'HLA':   from dbs_analysis.sequences import HLA_DBS as DBS
         elif self.analysisfolder.settings.type == 'WFA': from dbs_analysis.sequences import WFA_DBS as DBS
+        elif self.analysisfolder.settings.type == 'ChIB': from dbs_analysis.sequences import ChIB_DBS as DBS
 
         if self.dbsPrimaryCoordinates:
             self.dbs = self.dbsPrimaryCoordinates[0][self.dbsPrimaryCoordinates[1]:self.dbsPrimaryCoordinates[2]]
@@ -156,7 +157,7 @@ class ReadPair(object):
                     self.dbsSeq = False
                     #print 'ohhhnooooo!',dbsSeq
             else:pass#print 'BADSEQUENCE!',dbsSeq
-            
+
     def matchSequence(self, readsequence, matchsequence, maxDistance, matchfunk=misc.hamming_distance, startOfRead=False,breakAtFirstMatch=False):
         """" function for finding sequenc motifs in the read sequence returns a list with [startcoordinate, endcoordinate, number of missmatches]"""
         
@@ -212,7 +213,7 @@ class ReadPair(object):
                 startPosition = None
                 endPosition = None
                 missmatches = None
-        
+
         return [startPosition,endPosition,missmatches]
 
     def makeColoredOut(self, terminalcolor=True, htmlcolor=False):
@@ -387,6 +388,19 @@ class ReadPair(object):
             from dbs_analysis.sequences import WFA_H2 as H2
             from dbs_analysis.sequences import WFA_H3 as H3
             from dbs_analysis.sequences import WFA_DBS as DBS
+
+        ###################################################################################
+        # COMMENTS
+        #   - Same as in sequences.
+
+        elif self.analysisfolder.settings.type == 'ChIB':
+            from dbs_analysis.sequences import ChIB_H1 as H1
+            from dbs_analysis.sequences import ChIB_H4 as H2
+            from dbs_analysis.sequences import ChIB_H_fake as H3
+            from dbs_analysis.sequences import ChIB_DBS as DBS
+
+        ####################################################################################
+
         from dbs_analysis.sequences import IND_HANDLE_1
         from dbs_analysis.sequences import IND_HANDLE_2
 
@@ -514,7 +528,7 @@ class ReadPair(object):
             self.construct ='missing:'
             if not self.h1: self.construct += ' h1 '
             if not self.h3: self.construct += ' h3 '
-            if not self.h2: self.construct += ' h2'
+            if not self.h2: self.construct += ' h2 '
             if self.h1 and self.h3 and not self.h2 and self.direction == '1 -> 2' and len(self.r1Seq)<60: self.construct = ' h2-SemiOK'
 
     def isIlluminaAdapter(self, ):
@@ -573,3 +587,111 @@ class ReadPair(object):
         fastq2.readline().rstrip() # trash the "+"
         self.r2Qual = fastq2.readline().rstrip() # get the quality
 
+    def xyz_ID_identifier(self):
+
+        # Is here if I want to exapand this code later.
+        #if self.analysisfolder.settings.type = 'ChIB'
+
+        # Imports handles we want to find.
+        #from dbs_analysis.sequences import ChIB_H1 as first_handle
+
+        import sys
+        from dbs_analysis.sequences import ChIB_H1 as H1
+        from dbs_analysis.sequences import ChIB_H2 as real_H2
+        from dbs_analysis.sequences import ChIB_H3 as real_H3
+        from dbs_analysis.sequences import ChIB_H4 as real_H4
+
+        #################           #################
+        # For when actually extracting sequences where handles are expeceted to be
+        # COMMENT:
+        #   - Make list for coordinates and extract later?
+        #   - Take something like position-3 to account for a maximum amount of accepted deletions
+        #   - [len(real_H1)+len(x),len(real_H1)+len(x)+len(real_H2),len(real_H1)+len(real_H2)+len(y)]
+        #   - = [H2start,H3start]
+        #   - Search for sequences according to self.read_id[handle_start:handle_start+len(handle)]
+        #first_handle_length = len(first_handle)
+        #################           #################
+
+        # Create a list to loop over to be more compatible with expanding code in future.
+        handles_to_be_identified = [real_H2, real_H3]
+        missmatchesAllowed = self.analysisfolder.settings.maxHandleMissMatches
+
+        # Identify what handles we have in the read. Won't look if H1 not found.
+        if H1 in self.r1Seq:
+            for handle_sequence in handles_to_be_identified:
+
+                # Instead of identify_direction. Identifies perfect matches followed by using hamming distance if not successful (matchSequence)
+                # COMMENT:
+                #   - Might want to pick out sequence to match with coordinates. Won't add in first version however.
+                #   - How do I write handle_#[position in list?]
+
+       #         self.handle_ID = self.matchSequence(self.r1Seq, handle_sequence, missmatchesAllowed, startOfRead=False, breakAtFirstMatch=True)
+                sys.stderr.write(self.matchSequence(self.r1Seq,handle_sequence,missmatchesAllowed,startOfRead=True,breakAtFirstMatch=True)+'\n')
+               # self.handle_ID = [start, end ,mm]
+        #        self.handle_dict[handle_sequence] = read_pair.matchSequence(self.read_id, handle_sequence, breakAtFirstMatch=True)
+                # Do I have to save this in a variable/to the object or is that done in this line?
+                # Does missmatchesAllowed mean it wont look for perfect match first?
+
+
+                #self.h1 = self.matchSequence(self.r1Seq,H1,missmatchesAllowed,startOfRead=True,breakAtFirstMatch=True)
+
+                # if result_list[0].isdigit() == True         # How can I search for this in object?
+                    # save coordinates into object?
+                # else
+                    # return? Break? They should have the same effet right? same goes for root-else loop
+            # report found handles
+       # else:
+            # REPORT BROKEN READ? Should already be in direction_identifier right?
+            #continue # Maybe can just skip else-part? Don't know if if-loop complains about it.
+
+       # if H1 and real_H2 and real_H3 and H2 in read:
+        #    self.dbsPrimaryCoordinates = [self.r1Seq, self.r1Qual] # How should I write this?
+
+        # SAVE THIS ROW FOR EXTRACTING DBS SEQUENCES. ^^^
+        #
+        # self.dbsPrimaryCoordinates = [self.r1Seq, self.h1[1], self.h2[0], self.r1Qual]
+
+        return ''
+
+
+    def xyz_barcode_add_stats(self):
+
+        # Won't make general since it will interfere with HLA pipeline when using that to identify real_H1/real_H4
+
+        self.dbsPrimaryCoordinates = [self.r1Seq, self.h1[1], self.h2[0], self.r1Qual]
+
+        if self.real_h2 and self.real_h3 and self.h3:
+            self.construct = 'xyz_barcodes_intact'
+        else:
+            self.construct = 'missing:'
+            if not self.real_H1: self.construct += ' real_h1 '
+            if not self.real_H2: self.construct += ' real_h2 '
+            if not self.real_H3: self.construct += ' real_h3 '
+            if not self.real_H4: self.construct += ' real_h4 '
+
+        return ''
+
+############ PROBABLY WONT NEED THIS ###########
+#
+#    def sequence_matcher(self, read_id, handle_ID): # How can I fetch read_id (or "matchsequence") from object? read_id should be r1Seq of r2Seq.
+#
+#        # Set initial values.
+#        startPosition, endPosition, missmatches = None
+#        missmatchesAllowed = self.analysisfolder.settings.maxHandleMissMatches # Do I need to use this as a input to matchSequence?
+#
+#        matchsequence = self.Handle_id # Will this work? I need to fetch the sequence. Or
+#
+#        # Find perfect matches
+#        perfect_match = re.search(matchsequence, self.read_id)
+#        if perfect_match:
+#            startPosition = perfect_match.start()
+#            endPosition = perfect_match.end()
+#            missmatches = 0
+#            startPosition, endPosition, missmatches = self.handle_ID
+#
+#        # If no perfect match, use hamming distance and max allowed mismatches
+#        else:
+#            self. = self.matchSequence(self.read_id, matchsequence, missmatchesAllowed, breakAtFirstMatch=True)    ### WHAT DOES THIS DO, ERIK? ###
+#            # self.h1 = self.matchSequence(self.r1Seq,H1,missmatchesAllowed,startOfRead=True,breakAtFirstMatch=True)
+#
+#        return ''

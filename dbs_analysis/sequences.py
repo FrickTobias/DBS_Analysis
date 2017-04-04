@@ -16,6 +16,24 @@ WFA_H2 = 'CTGTCTCTTATACACATCTCATGAGAACGTCGTTGACGATGGACAGTTCCAAGAGGTCATG' #H1691'
 WFA_H3 = 'TAGGACCAGCGTCTCAGTAGAGATGTGTATAAGAGACAG' #H43283'G+TES
 #################### WFA system ##############################################################################
 
+
+#################### ChIB system #############################################################################
+# COMMENTS
+#   - Incorporate H1, H2, H3, H4 for new system.
+
+import seqdata
+ChIB_H1 = 'GCCTGCACACTACAGCGTCC'
+ChIB_H2 = 'AATTACCAGGCCAGTCGGTC'
+ChIB_H3 = 'GATATTGCACGGTTGAACGG'
+ChIB_H4 = seqdata.revcomp('ACGGTTCCTCAATGTCTGCC')
+
+# Temporary DBS because I'm not sure if removing it will break stuff.
+ChIB_DBS = 'BDHVBDHVBDHVBDHVBDHV'
+
+# In silico added handle to fit pipeline. Serves as equivalent to H3 in the HLA pipeline.
+ChIB_H_fake = seqdata.revcomp('ACGGTTCCTCAATGTCTGCC')
+#################### ChIB system #############################################################################
+
 #################### HLA system ##############################################################################
 import seqdata
 HLA_H1  = 'ACCGAGTGGTGAGTCATAGT'
@@ -43,6 +61,27 @@ def sequence_layout(layout='HLA'):
         H2 = WFA_H2
         H3 = WFA_H3
         DBS= WFA_DBS
+
+    ########################################################################################
+    # NEWSTUFF FROM FRICK
+    # Comments
+    #   - Can DBS be None without breaking stuff?
+    #   - remember to Check if DBS can be removed.
+    elif layout == 'ChIB':
+
+        # Stuff which goes strait into HLA pipeline.
+        H1 = ChIB_H1
+        H2 = ChIB_H4    # NB ChIB H4 is imported as H2 due to structure of HLA pipeline.
+        H3 = ChIB_H_fake
+        DBS = ChIB_DBS  # Remove if you find where this is used in the pipeline. Something imports it somewhere.
+
+        # Custom object sequences for ChIB xyz barcode layout
+        real_H1 = ChIB_H1   # Not necessary, same as H2, but less confusing for reading/writing ChIB scripts.
+        real_H2 = ChIB_H2
+        real_H3 = ChIB_H3
+        real_H4 = ChIB_H4   # Not necessary, same as H2, but less confusing for reading/writing ChIB scripts.
+
+    #########################################################################################
     else:
         print 'Error: No layout specified.'
         return 1
@@ -67,6 +106,7 @@ def sequence_layout(layout='HLA'):
 def main():
     print sequence_layout(layout='HLA')
     print sequence_layout(layout='WFA')
+    print sequence_layout(layout='ChIB')
 
 
 if __name__ == "__main__": main()

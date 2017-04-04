@@ -68,10 +68,23 @@ def foreachRead(readpair):
     
     #readpair.isIlluminaAdapter()
     readpair.identifyDirection()
-    #readpair.makeColoredOut() # removed this to speed things up should be able to run if comment is removed
+
+
+    # global name self not defined, do I need to import it somehow?
+    #if self.analysisfolder.settings.type == 'ChIB':
+    #readpair.xyz_ID_identifier()
+
+    #readpair.makeColoredOut() # removed this to speed things up, should be able to run if comment is removed.
     readpair.fixInsert()
-    readpair.matchdbs()
-    
+
+    #readpair.matchdbs()     #### REMOVED IN MY PIPELINE #####
+    #
+    # COMMMENT:
+    #   - Idea of how to write it when finished making this.
+    #
+    # if settings.type='ChIB': continue
+    # else: readpair.matchdbs()
+
     return readpair
 
 class FastqReader(object):
