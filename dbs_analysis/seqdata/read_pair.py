@@ -595,11 +595,13 @@ class ReadPair(object):
         # Imports handles we want to find.
         #from dbs_analysis.sequences import ChIB_H1 as first_handle
 
+        ####### FINDING THE HANDLES ########
+
         import sys
         from dbs_analysis.sequences import ChIB_H1 as H1
         from dbs_analysis.sequences import ChIB_H2 as real_H2
         from dbs_analysis.sequences import ChIB_H3 as real_H3
-        from dbs_analysis.sequences import ChIB_H4 as real_H4
+        from dbs_analysis.sequences import ChIB_H4 as H2
 
         #################           #################
         # For when actually extracting sequences where handles are expeceted to be
@@ -617,7 +619,7 @@ class ReadPair(object):
         missmatchesAllowed = self.analysisfolder.settings.maxHandleMissMatches
 
         # Identify what handles we have in the read. Won't look if H1 not found.
-        if H1 in self.r1Seq:
+        if H1 in self.r1Seq:   # Will this return 'True' if H1 has been found in direction_identifier?
             for handle_sequence in handles_to_be_identified:
 
                 # Instead of identify_direction. Identifies perfect matches followed by using hamming distance if not successful (matchSequence)
@@ -625,6 +627,8 @@ class ReadPair(object):
                 #   - Might want to pick out sequence to match with coordinates. Won't add in first version however.
                 #   - How do I write handle_#[position in list?]
 
+                import pdb
+                pdb.set_trace()
        #         self.handle_ID = self.matchSequence(self.r1Seq, handle_sequence, missmatchesAllowed, startOfRead=False, breakAtFirstMatch=True)
                 sys.stderr.write(self.matchSequence(self.r1Seq,handle_sequence,missmatchesAllowed,startOfRead=True,breakAtFirstMatch=True)+'\n')
                # self.handle_ID = [start, end ,mm]
@@ -632,17 +636,34 @@ class ReadPair(object):
                 # Do I have to save this in a variable/to the object or is that done in this line?
                 # Does missmatchesAllowed mean it wont look for perfect match first?
 
-
                 #self.h1 = self.matchSequence(self.r1Seq,H1,missmatchesAllowed,startOfRead=True,breakAtFirstMatch=True)
 
                 # if result_list[0].isdigit() == True         # How can I search for this in object?
                     # save coordinates into object?
                 # else
                     # return? Break? They should have the same effet right? same goes for root-else loop
-            # report found handles
-       # else:
-            # REPORT BROKEN READ? Should already be in direction_identifier right?
-            #continue # Maybe can just skip else-part? Don't know if if-loop complains about it.
+
+        ######## FINDING THE BARCODES ########
+
+        # Import x_barcode_list as x_barcode_list
+        # Import y_barcode_list as y_barcode_list
+        # Import z_barcode_list as z_barcode_list
+
+        # primary_barcode_list = [x_barcode_list, y_barcode_list, z_barcode_list]
+        # for barcode_list in primary_barcode_list:
+            # for barcode in barcode_list:
+                # self.matchSequence()
+                # if result[0].isdigit() == True:
+                    # commit barcode_id and sequence
+                    # break
+
+        # if bc_x, bc_y, bc_z in object:
+            # All xyz found
+        # elif:
+            # x missing => +1 counter
+            # y missing => +1 counter
+            # z missing => +1 counter
+
 
        # if H1 and real_H2 and real_H3 and H2 in read:
         #    self.dbsPrimaryCoordinates = [self.r1Seq, self.r1Qual] # How should I write this?
