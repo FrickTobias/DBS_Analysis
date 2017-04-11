@@ -41,7 +41,7 @@ class AnalysisFolder(object):
         self.database_in_temp = False
         
         # objects
-        self.database  = Database(self.databaseFileName, self)
+        self.database = Database(self.databaseFileName, self)
         self.settings = Settings(self)
         self.results = Results(self)
         
@@ -154,4 +154,54 @@ class AnalysisFolder(object):
         
         # end by closing the input file
         index_file.close()
-        
+
+    def read_ChIB_barcode_dict(self,):
+        # This function reads fasta files and saves to dictionaries. Structure demand:
+        #
+        # >NN.##
+        # AAGGTTCC
+        #
+        # Gives dictionary where ## is linked to AAGGTTCC under major key NN. The NN must be grouped in the fasta file.
+
+        from dbs_analysis.metadata.settings import Settings
+
+        # Sets inital values.
+        xyz_id = None
+        number_id = None
+        sequence = None
+
+        # Dictionary stuff
+        dictionary = {}
+        prev_major_key = None
+
+       # Settings.ChIB_barcode_file
+
+        # Won't work if X, Y, Z is not grouped.
+        with open(self.settings.ChIB_barcode_file, 'r') as barcode_handle:
+            for line in barcode_handle:
+
+                if line.startswith('>'):
+
+                    # Identify major key
+                    xyz_id = line.split('.')[0].strip('>')
+                    dict_major_key = str(xyz_id[0]).split('.')[0]
+
+                    # If new major key, create major key entry in dictionary
+                    if not dict_major_key == prev_major_key:
+                        dictionary[dict_major_key] = {}
+
+                    # ID to be associated with sequence
+                    number_id = (line.split('.')[1].strip())
+                else:
+
+                    # Fetches sequence
+                    sequence = ((line.strip()))
+                    # pdb.set_trace()
+                    dictionary[dict_major_key][number_id] = sequence
+
+                # Saves latest dict key to be compared with next row.
+                prev_major_key = dict_major_key
+
+        self.xyz_bc_dict = dictionary
+
+        return 0

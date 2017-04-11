@@ -39,7 +39,11 @@ def main():
     logfile = open(analysisfolder.logpath+'/'+time.strftime("%y%m%d-%H:%M:%S",time.localtime())+'_wfaChecker','w',1)
     logfile.write('cmd: '+' '.join(sys.argv)+'\n')
     analysisfolder.logfile = logfile
-    
+
+    # If ChIB setting is true, reads ChIB file from /[path]/filename defined in settings. Saves in instance.
+    if analysisfolder.settings.type == 'ChIB':
+        analysisfolder.read_ChIB_barcode_dict()
+
     #
     # add files to database
     #
@@ -48,7 +52,7 @@ def main():
     else:
         logfile.write('No fastq files added to db just running data check ... \n')
     logfile.write('Allowing '+str(analysisfolder.settings.maxHandleMissMatches)+' missmatches in handles during this run.\n')
-    
+
     if 'justadd' not in ' '.join(sys.argv):
         #
         # create the fastq reader and runt it
@@ -69,12 +73,12 @@ def foreachRead(readpair):
     #readpair.isIlluminaAdapter()
     readpair.identifyDirection()
 
-    if readpair.analysisfolder.settings.type == 'ChIB':
-        readpair.xyz_ID_identifier()
-        readpair.fixInsert()
-    else:
-        readpair.fixInsert()
-        readpair.matchdbs()
+    #if readpair.analysisfolder.settings.type == 'ChIB':
+    #    readpair.xyz_ID_identifier()
+    #    readpair.fixInsert()
+    #else:
+    #    readpair.fixInsert()
+    #    readpair.matchdbs()
 
     #readpair.makeColoredOut() # removed this to speed things up, should be able to run if comment is removed.
 

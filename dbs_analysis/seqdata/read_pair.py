@@ -615,28 +615,38 @@ class ReadPair(object):
         #################           #################
 
         # Create a list to loop over to be more compatible with expanding code in future.
-        handles_to_be_identified = [real_H2, real_H3]
-        missmatchesAllowed = self.analysisfolder.settings.maxHandleMissMatches
+     #   handles_to_be_identified = [real_H2, real_H3]
+     #   missmatchesAllowed = self.analysisfolder.settings.maxHandleMissMatches
 
         # Identify what handles we have in the read. Won't look if H1 not found.
-        if H1 in self.r1Seq:   # Will this return 'True' if H1 has been found in direction_identifier?
-            for handle_sequence in handles_to_be_identified:
+     #   if self.h1:   # Will this return 'True' if H1 has been found in direction_identifier?
+            #for handle_sequence in handles_to_be_identified:
 
                 # Instead of identify_direction. Identifies perfect matches followed by using hamming distance if not successful (matchSequence)
                 # COMMENT:
                 #   - Might want to pick out sequence to match with coordinates. Won't add in first version however.
                 #   - How do I write handle_#[position in list?]
 
-                import pdb
-                pdb.set_trace()
+#                import pdb
+ #               pdb.set_trace()
        #         self.handle_ID = self.matchSequence(self.r1Seq, handle_sequence, missmatchesAllowed, startOfRead=False, breakAtFirstMatch=True)
-                sys.stderr.write(self.matchSequence(self.r1Seq,handle_sequence,missmatchesAllowed,startOfRead=True,breakAtFirstMatch=True)+'\n')
+
+
+                #if handle_sequence in self.r1Seq: print 'yes box'
+                #else: print self.r1Seq, handle_sequence
+         #   self.real_h2 = self.matchSequence(self.r1Seq,real_H2,missmatchesAllowed,startOfRead=False,breakAtFirstMatch=True)
+         #   self.real_h3 = self.matchSequence(self.r1Seq,real_H3,missmatchesAllowed,startOfRead=False,breakAtFirstMatch=True)
                # self.handle_ID = [start, end ,mm]
         #        self.handle_dict[handle_sequence] = read_pair.matchSequence(self.read_id, handle_sequence, breakAtFirstMatch=True)
                 # Do I have to save this in a variable/to the object or is that done in this line?
                 # Does missmatchesAllowed mean it wont look for perfect match first?
 
                 #self.h1 = self.matchSequence(self.r1Seq,H1,missmatchesAllowed,startOfRead=True,breakAtFirstMatch=True)
+
+        #    if self.real_h2[0] and self.real_h3[0]:
+        #        x_bc_coordinates = [,]
+        #        y_bc_coordinates = [,]
+        #        z_bc_coordinates = [,]
 
                 # if result_list[0].isdigit() == True         # How can I search for this in object?
                     # save coordinates into object?
@@ -645,9 +655,35 @@ class ReadPair(object):
 
         ######## FINDING THE BARCODES ########
 
+        file_handle = open(self.analysisfolder.settings.barcode_path)
+        self.analysisfolder.chib_barcode_dict[xyz][gctatcgactag] = id
+        barcode_dictionary = { barcode.rstrip():True for barcode in file_handle }
         # Import x_barcode_list as x_barcode_list
         # Import y_barcode_list as y_barcode_list
         # Import z_barcode_list as z_barcode_list
+
+        # type    id  sequence
+        #x   0   GATCGATCG
+        #x   1   GTACGATGC
+        #...
+        #[xyz]   int [AGTC]+
+
+        # eriks kludder
+        #type = 'x'
+        #barcode_sequence = self.r1Seq[h1_end_coord:h2_start_coord]
+
+        #if barcode_sequence in barcode_dictionary[type]: pass #barcode_id = barcode_dictionary[type][barcode_sequence]
+        #else:
+        #    for known_barcode in barcode_dictionary[type].keys: pass
+
+        # alternative 2:
+        #try: barcode_id = barcode_dictionary[type][barcode_sequence]
+        #except keyError:
+        #    for known_barcode in barcode_dictionary[type].keys: pass
+
+
+############ SLUT ERIKS KLUDDER? ######
+
 
         # primary_barcode_list = [x_barcode_list, y_barcode_list, z_barcode_list]
         # for barcode_list in primary_barcode_list:
@@ -679,16 +715,16 @@ class ReadPair(object):
 
         # Won't make general since it will interfere with HLA pipeline when using that to identify real_H1/real_H4
 
-        self.dbsPrimaryCoordinates = [self.r1Seq, self.h1[1], self.h2[0], self.r1Qual]
+    #    self.dbsPrimaryCoordinates = [self.r1Seq, self.h1[1], self.h2[0], self.r1Qual]
 
-        if self.real_h2 and self.real_h3 and self.h3:
-            self.construct = 'xyz_barcodes_intact'
-        else:
-            self.construct = 'missing:'
-            if not self.real_H1: self.construct += ' real_h1 '
-            if not self.real_H2: self.construct += ' real_h2 '
-            if not self.real_H3: self.construct += ' real_h3 '
-            if not self.real_H4: self.construct += ' real_h4 '
+    #    if self.real_h2 and self.real_h3 and self.h3:
+    #        self.construct = 'xyz_barcodes_intact'
+    #    else:
+    #        self.construct = 'missing:'
+    #        if not self.real_H1: self.construct += ' real_h1 '
+    #        if not self.real_H2: self.construct += ' real_h2 '
+    #        if not self.real_H3: self.construct += ' real_h3 '
+    #        if not self.real_H4: self.construct += ' real_h4 '
 
         return ''
 
