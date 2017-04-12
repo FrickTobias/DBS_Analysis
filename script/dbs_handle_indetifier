@@ -43,7 +43,6 @@ def main():
     # If ChIB setting is true, reads ChIB file from /[path]/filename defined in settings. Saves in instance.
     if analysisfolder.settings.type == 'ChIB':
         analysisfolder.read_ChIB_barcode_dict()
-
     #
     # add files to database
     #
@@ -73,12 +72,12 @@ def foreachRead(readpair):
     #readpair.isIlluminaAdapter()
     readpair.identifyDirection()
 
-    #if readpair.analysisfolder.settings.type == 'ChIB':
-    #    readpair.xyz_ID_identifier()
-    #    readpair.fixInsert()
-    #else:
-    #    readpair.fixInsert()
-    #    readpair.matchdbs()
+    if readpair.analysisfolder.settings.type == 'ChIB':
+        readpair.xyz_ID_identifier()
+        readpair.fixInsert()
+    else:
+        readpair.fixInsert()
+        readpair.matchdbs()
 
     #readpair.makeColoredOut() # removed this to speed things up, should be able to run if comment is removed.
 

@@ -598,13 +598,13 @@ class ReadPair(object):
         ####### FINDING THE HANDLES ########
 
         import sys
-        from dbs_analysis.sequences import ChIB_H1 as H1
-        from dbs_analysis.sequences import ChIB_H2 as real_H2
-        from dbs_analysis.sequences import ChIB_H3 as real_H3
-        from dbs_analysis.sequences import ChIB_H4 as H2
+        from dbs_analysis.sequences import ChIB_H1 as real_h1
+        from dbs_analysis.sequences import ChIB_H2 as real_h2
+        from dbs_analysis.sequences import ChIB_H3 as real_h3
+        from dbs_analysis.sequences import ChIB_H4 as real_h4
 
         #################           #################
-        # For when actually extracting sequences where handles are expeceted to be
+        # For when actually extracting sequences where handles are expected to be
         # COMMENT:
         #   - Make list for coordinates and extract later?
         #   - Take something like position-3 to account for a maximum amount of accepted deletions
@@ -615,27 +615,15 @@ class ReadPair(object):
         #################           #################
 
         # Create a list to loop over to be more compatible with expanding code in future.
-     #   handles_to_be_identified = [real_H2, real_H3]
-     #   missmatchesAllowed = self.analysisfolder.settings.maxHandleMissMatches
+        #handles_to_be_identified = [real_H2, real_H3]
+        missmatchesAllowed = self.analysisfolder.settings.maxHandleMissMatches
 
         # Identify what handles we have in the read. Won't look if H1 not found.
-     #   if self.h1:   # Will this return 'True' if H1 has been found in direction_identifier?
-            #for handle_sequence in handles_to_be_identified:
+        if self.h1:
 
-                # Instead of identify_direction. Identifies perfect matches followed by using hamming distance if not successful (matchSequence)
-                # COMMENT:
-                #   - Might want to pick out sequence to match with coordinates. Won't add in first version however.
-                #   - How do I write handle_#[position in list?]
+            self.real_h2 = self.matchSequence(self.r1Seq,real_h2,missmatchesAllowed,startOfRead=False,breakAtFirstMatch=True)
+            self.real_h3 = self.matchSequence(self.r1Seq,real_h3,missmatchesAllowed,startOfRead=False,breakAtFirstMatch=True)
 
-#                import pdb
- #               pdb.set_trace()
-       #         self.handle_ID = self.matchSequence(self.r1Seq, handle_sequence, missmatchesAllowed, startOfRead=False, breakAtFirstMatch=True)
-
-
-                #if handle_sequence in self.r1Seq: print 'yes box'
-                #else: print self.r1Seq, handle_sequence
-         #   self.real_h2 = self.matchSequence(self.r1Seq,real_H2,missmatchesAllowed,startOfRead=False,breakAtFirstMatch=True)
-         #   self.real_h3 = self.matchSequence(self.r1Seq,real_H3,missmatchesAllowed,startOfRead=False,breakAtFirstMatch=True)
                # self.handle_ID = [start, end ,mm]
         #        self.handle_dict[handle_sequence] = read_pair.matchSequence(self.read_id, handle_sequence, breakAtFirstMatch=True)
                 # Do I have to save this in a variable/to the object or is that done in this line?
@@ -655,9 +643,9 @@ class ReadPair(object):
 
         ######## FINDING THE BARCODES ########
 
-        file_handle = open(self.analysisfolder.settings.barcode_path)
-        self.analysisfolder.chib_barcode_dict[xyz][gctatcgactag] = id
-        barcode_dictionary = { barcode.rstrip():True for barcode in file_handle }
+     #   file_handle = open(self.analysisfolder.settings.barcode_path)
+     #   self.analysisfolder.chib_barcode_dict[xyz][gctatcgactag] = id
+     #   barcode_dictionary = { barcode.rstrip():True for barcode in file_handle }
         # Import x_barcode_list as x_barcode_list
         # Import y_barcode_list as y_barcode_list
         # Import z_barcode_list as z_barcode_list
