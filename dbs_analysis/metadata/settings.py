@@ -45,7 +45,7 @@ class Settings(object,):
             'port':'string',
             'type':'string',
             'known_hla_types':'filename',
-            'ChIB_barcode_file':'string'
+            'ChIB_barcode_file':'filename'
         }
         
         #

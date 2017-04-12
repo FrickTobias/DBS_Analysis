@@ -176,8 +176,9 @@ class AnalysisFolder(object):
 
        # Settings.ChIB_barcode_file
 
-        # Won't work if X, Y, Z is not grouped.
-        with open(self.settings.ChIB_barcode_file, 'r') as barcode_handle:
+        # Opens file and saves entries to dict. Won't work if X, Y, Z is not grouped.
+        import os
+        with open(str(self.settings.ChIB_barcode_file), 'r') as barcode_handle:
             for line in barcode_handle:
 
                 if line.startswith('>'):
