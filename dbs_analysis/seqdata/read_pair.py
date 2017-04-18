@@ -589,97 +589,53 @@ class ReadPair(object):
 
     def xyz_ID_identifier(self):
 
-        # Is here if I want to exapand this code later.
-        #if self.analysisfolder.settings.type = 'ChIB'
-
-        # Imports handles we want to find.
-        #from dbs_analysis.sequences import ChIB_H1 as first_handle
-
-        ####### FINDING THE HANDLES ########
-
-        import sys
-        from dbs_analysis.sequences import ChIB_H1 as real_h1
+        # Importing metadata.
         from dbs_analysis.sequences import ChIB_H2 as real_h2
         from dbs_analysis.sequences import ChIB_H3 as real_h3
-        from dbs_analysis.sequences import ChIB_H4 as real_h4
-
-        #################           #################
-        # For when actually extracting sequences where handles are expected to be
-        # COMMENT:
-        #   - Make list for coordinates and extract later?
-        #   - Take something like position-3 to account for a maximum amount of accepted deletions
-        #   - [len(real_H1)+len(x),len(real_H1)+len(x)+len(real_H2),len(real_H1)+len(real_H2)+len(y)]
-        #   - = [H2start,H3start]
-        #   - Search for sequences according to self.read_id[handle_start:handle_start+len(handle)]
-        #first_handle_length = len(first_handle)
-        #################           #################
-
-        # Create a list to loop over to be more compatible with expanding code in future.
-        #handles_to_be_identified = [real_H2, real_H3]
         missmatchesAllowed = self.analysisfolder.settings.maxHandleMissMatches
 
-        # Identify what handles we have in the read. Won't look if H1 not found.
-        if self.h1:
+        # Handle identification.
+        from dbs_analysis.seqdata import revcomp
 
+        self.real_h2 = None
+        self.real_h3 = None
+
+
+        if self.h1 and self.h2:
+
+            # Finds handle 2 and 3 (ChIB handles, not HLA).
             self.real_h2 = self.matchSequence(self.r1Seq,real_h2,missmatchesAllowed,startOfRead=False,breakAtFirstMatch=True)
             self.real_h3 = self.matchSequence(self.r1Seq,real_h3,missmatchesAllowed,startOfRead=False,breakAtFirstMatch=True)
 
-               # self.handle_ID = [start, end ,mm]
-        #        self.handle_dict[handle_sequence] = read_pair.matchSequence(self.read_id, handle_sequence, breakAtFirstMatch=True)
-                # Do I have to save this in a variable/to the object or is that done in this line?
-                # Does missmatchesAllowed mean it wont look for perfect match first?
+            if self.real_h2[0] != None and self.real_h3[0] != None:
 
-                #self.h1 = self.matchSequence(self.r1Seq,H1,missmatchesAllowed,startOfRead=True,breakAtFirstMatch=True)
+                barcode_types = self.analysisfolder.xyz_bc_dict.keys()
 
-        #    if self.real_h2[0] and self.real_h3[0]:
-        #        x_bc_coordinates = [,]
-        #        y_bc_coordinates = [,]
-        #        z_bc_coordinates = [,]
+                # Creates dictionary along its major keys.
+                self.chib_barcode_id = { barcode_type:None for barcode_type in barcode_types }
 
-                # if result_list[0].isdigit() == True         # How can I search for this in object?
-                    # save coordinates into object?
-                # else
-                    # return? Break? They should have the same effet right? same goes for root-else loop
+                # Order: Y - X - Z. Only because dictionary has that order, otherwise for-loop below looks for x bc in y bc list and vice versa.
+                # GREPFRICK: dict order
+                positions_list = [[self.real_h2[1],self.real_h3[0]],[self.h1[1],self.real_h2[0]],[self.real_h3[1],self.h2[0]]]
 
-        ######## FINDING THE BARCODES ########
-
-     #   file_handle = open(self.analysisfolder.settings.barcode_path)
-     #   self.analysisfolder.chib_barcode_dict[xyz][gctatcgactag] = id
-     #   barcode_dictionary = { barcode.rstrip():True for barcode in file_handle }
-        # Import x_barcode_list as x_barcode_list
-        # Import y_barcode_list as y_barcode_list
-        # Import z_barcode_list as z_barcode_list
-
-        # type    id  sequence
-        #x   0   GATCGATCG
-        #x   1   GTACGATGC
-        #...
-        #[xyz]   int [AGTC]+
-
-        # eriks kludder
-        #type = 'x'
-        #barcode_sequence = self.r1Seq[h1_end_coord:h2_start_coord]
-
-        #if barcode_sequence in barcode_dictionary[type]: pass #barcode_id = barcode_dictionary[type][barcode_sequence]
-        #else:
-        #    for known_barcode in barcode_dictionary[type].keys: pass
-
-        # alternative 2:
-        #try: barcode_id = barcode_dictionary[type][barcode_sequence]
-        #except keyError:
-        #    for known_barcode in barcode_dictionary[type].keys: pass
+                # Finds barcode sequences in between given positions
+                for i in range(len(barcode_types)):
+                    try:
+                        self.chib_barcode_id[barcode_types[i]] = self.analysisfolder.xyz_bc_dict[barcode_types[i]][revcomp(self.r1Seq[positions_list[i][0]:positions_list[i][1]])]
+                    except KeyError:
+                        self.chib_barcode_id[barcode_types[i]] = None
+                        # LATER: HAMMING DISTANCE
+           # else:
+              #  self.real_h2 = None
+             #   self.real_h3 = None
+       # else:
 
 
-############ SLUT ERIKS KLUDDER? ######
+        self.xyz_barcode_add_stats()
+                # Later: Run stats
+                # +1 Handles 2 and or 3 missing
+                # +1 Barcode missing
 
-
-        # primary_barcode_list = [x_barcode_list, y_barcode_list, z_barcode_list]
-        # for barcode_list in primary_barcode_list:
-            # for barcode in barcode_list:
-                # self.matchSequence()
-                # if result[0].isdigit() == True:
-                    # commit barcode_id and sequence
-                    # break
 
         # if bc_x, bc_y, bc_z in object:
             # All xyz found
@@ -688,18 +644,41 @@ class ReadPair(object):
             # y missing => +1 counter
             # z missing => +1 counter
 
-
-       # if H1 and real_H2 and real_H3 and H2 in read:
-        #    self.dbsPrimaryCoordinates = [self.r1Seq, self.r1Qual] # How should I write this?
-
-        # SAVE THIS ROW FOR EXTRACTING DBS SEQUENCES. ^^^
-        #
-        # self.dbsPrimaryCoordinates = [self.r1Seq, self.h1[1], self.h2[0], self.r1Qual]
-
         return ''
 
-
     def xyz_barcode_add_stats(self):
+
+     #   print self.chib_barcode_id
+        if self.real_h2 and self.real_h3:
+            self.construct = 'ChIB_handles_intact'
+        else:
+            # Overwrites previous report and checks for all handles.
+            # GREPFRICK: Not necessary to overwrite since h1, h2 and h3 presence already known.
+            self.construct = 'missing'
+            if not self.h1: self.construct += ' ChIB_h1 '
+            if not self.real_h2: self.construct += ' ChIB_h2 '
+            if not self.real_h3: self.construct += ' ChIB_h3 '
+            if not self.h2: self.construct += ' ChIB_h4 '
+            #if not self.h3: self.construct += 'ChIB_h5'    # Take back if h3 (aka real_h5) is in real reads.
+
+        # Also depending on dictionary order.
+        # GREPFRICK: dict order
+
+
+
+    #    if self.chib_barcode_id['X'].isdigit() and self.chib_barcode_id['Y'].isdigit() and self.chib_barcode_id['Z'].isdigit():
+    #        self.construct = 'XYZ found'
+    #    else:
+    #        if not self.chib_barcode_id['X']: self.construct += ' X '
+    #        if not self.chib_barcode_id['Y']: self.construct += ' Y '
+    #        if not self.chib_barcode_id['Z']: self.construct += ' Z '
+
+
+        # How many h2?
+        # How many h3?
+        # How many bcX?
+        # How many bcY?
+        # How many bcZ?
 
         # Won't make general since it will interfere with HLA pipeline when using that to identify real_H1/real_H4
 

@@ -198,11 +198,11 @@ class AnalysisFolder(object):
                     # Fetches sequence
                     sequence = ((line.strip()))
                     # pdb.set_trace()
-                    dictionary[dict_major_key][number_id] = sequence
+                    dictionary[dict_major_key][sequence] = number_id
 
                 # Saves latest dict key to be compared with next row.
                 prev_major_key = dict_major_key
 
-        self.xyz_bc_dict = dictionary
+        AnalysisFolder.xyz_bc_dict = dictionary
 
         return 0

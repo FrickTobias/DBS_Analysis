@@ -384,17 +384,30 @@ class FastqReader(object):
         # Write log message
         #
         if self.logfile: self.logfile.write('Adding reads to database table (working in parallel).\n')
-        
-        # set up the pool of processes to run the analysis for each read pair
-        poolOfProcesses = multiprocessing.Pool(int(self.analysisfolder.settings.parallelProcesses),maxtasksperchild=100000000)
-        self.parallelResults = poolOfProcesses.imap_unordered(foreachRead,self.readPairGenerator(),chunksize=10000)
-        
-        #
-        # Parse through files and add to database in chunks of "self.appendChunkSize" reads
-        #
-        adapterCount = 0
-        with self.progress:
-            for pair in self.parallelResults:	    
+
+        if not self.analysisfolder.settings.debug:
+            # set up the pool of processes to run the analysis for each read pair
+            poolOfProcesses = multiprocessing.Pool(int(self.analysisfolder.settings.parallelProcesses),maxtasksperchild=100000000)
+            self.parallelResults = poolOfProcesses.imap_unordered(foreachRead,self.readPairGenerator(),chunksize=10000)
+
+            #
+            # Parse through files and add to database in chunks of "self.appendChunkSize" reads
+            #
+            adapterCount = 0
+            with self.progress:
+                # for pair in self.readPairGenerator():
+                #     pair = foreachRead(pair)
+                for pair in self.parallelResults:
+
+                    #
+                    # post procesing for each read, preparing and adding to db
+                    #
+                    self.foreachProcessedPair(pair)
+
+                    if 'Read1IsIlluminaAdapter' in pair.annotations or 'Read2IsIlluminaAdapter' in pair.annotations: adapterCount += 1
+        else:
+            for pair in self.readPairGenerator():
+                pair = foreachRead(pair)
 
                 #
                 # post procesing for each read, preparing and adding to db
@@ -402,7 +415,7 @@ class FastqReader(object):
                 self.foreachProcessedPair(pair)
 
                 if 'Read1IsIlluminaAdapter' in pair.annotations or 'Read2IsIlluminaAdapter' in pair.annotations: adapterCount += 1
-        
+
         # Set the adapter count to the results value in the results database table
         self.analysisfolder.results.setResult('readPairsAreIlluminaAdapters',adapterCount)
 
@@ -410,8 +423,9 @@ class FastqReader(object):
         # add final chunk to db and close the multiprocessing pool
         #
         if self.readsToAdd: self.chunkToDb()
-        poolOfProcesses.close()
-        poolOfProcesses.join()
+        if not self.analysisfolder.settings.debug:
+            poolOfProcesses.close()
+            poolOfProcesses.join()
         
         #
         # Done write to log and return
