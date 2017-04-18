@@ -595,12 +595,18 @@ class ReadPair(object):
         missmatchesAllowed = self.analysisfolder.settings.maxHandleMissMatches
 
         # Handle identification.
+        from dbs_analysis.hamming_cython_solution import hamming_loop
         from dbs_analysis.seqdata import revcomp
 
         self.real_h2 = None
         self.real_h3 = None
 
+        barcode_types = self.analysisfolder.xyz_bc_dict.keys()
+        # Creates dictionary along its major keys.
+        self.chib_barcode_id = {barcode_type: None for barcode_type in barcode_types}
 
+        # Won't look for anything if not h1 AND h2 is found => H1-bcX-H2-bcY-H3-bcZ-[NNN...] looks like H1-[NNN...]
+        # GREPFRICK: Need h2
         if self.h1 and self.h2:
 
             # Finds handle 2 and 3 (ChIB handles, not HLA).
@@ -609,48 +615,35 @@ class ReadPair(object):
 
             if self.real_h2[0] != None and self.real_h3[0] != None:
 
-                barcode_types = self.analysisfolder.xyz_bc_dict.keys()
-
-                # Creates dictionary along its major keys.
-                self.chib_barcode_id = { barcode_type:None for barcode_type in barcode_types }
-
                 # Order: Y - X - Z. Only because dictionary has that order, otherwise for-loop below looks for x bc in y bc list and vice versa.
                 # GREPFRICK: dict order
                 positions_list = [[self.real_h2[1],self.real_h3[0]],[self.h1[1],self.real_h2[0]],[self.real_h3[1],self.h2[0]]]
 
                 # Finds barcode sequences in between given positions
                 for i in range(len(barcode_types)):
+
+                    # Looks in barcode dictionary for perfect match
                     try:
                         self.chib_barcode_id[barcode_types[i]] = self.analysisfolder.xyz_bc_dict[barcode_types[i]][revcomp(self.r1Seq[positions_list[i][0]:positions_list[i][1]])]
+
+                    # If no perfect match, runs hamming distance.
                     except KeyError:
-                        self.chib_barcode_id[barcode_types[i]] = None
-                        # LATER: HAMMING DISTANCE
-           # else:
-              #  self.real_h2 = None
-             #   self.real_h3 = None
-       # else:
+                        for barcode in self.analysisfolder.xyz_bc_dict[barcode_types[i]]:
+                            missmatch_count = hamming_loop(barcode, revcomp(self.r1Seq[positions_list[i][0]:positions_list[i][1]]))
+                            if missmatch_count <= missmatchesAllowed:
+                                self.chib_barcode_id[barcode_types[i]] = self.analysisfolder.xyz_bc_dict[barcode_types[i]][barcode]
+                                break
 
-
+        # Function which counts handles and barcodes for summary report.
         self.xyz_barcode_add_stats()
-                # Later: Run stats
-                # +1 Handles 2 and or 3 missing
-                # +1 Barcode missing
-
-
-        # if bc_x, bc_y, bc_z in object:
-            # All xyz found
-        # elif:
-            # x missing => +1 counter
-            # y missing => +1 counter
-            # z missing => +1 counter
 
         return ''
 
     def xyz_barcode_add_stats(self):
 
-     #   print self.chib_barcode_id
-        if self.real_h2 and self.real_h3:
-            self.construct = 'ChIB_handles_intact'
+        # Looks for which handles have been found.
+        if self.h1 and self.real_h2 and self.real_h3 and self.h2:
+            self.construct = 'ChIB handles intact'
         else:
             # Overwrites previous report and checks for all handles.
             # GREPFRICK: Not necessary to overwrite since h1, h2 and h3 presence already known.
@@ -661,61 +654,12 @@ class ReadPair(object):
             if not self.h2: self.construct += ' ChIB_h4 '
             #if not self.h3: self.construct += 'ChIB_h5'    # Take back if h3 (aka real_h5) is in real reads.
 
-        # Also depending on dictionary order.
-        # GREPFRICK: dict order
-
-
-
-    #    if self.chib_barcode_id['X'].isdigit() and self.chib_barcode_id['Y'].isdigit() and self.chib_barcode_id['Z'].isdigit():
-    #        self.construct = 'XYZ found'
-    #    else:
-    #        if not self.chib_barcode_id['X']: self.construct += ' X '
-    #        if not self.chib_barcode_id['Y']: self.construct += ' Y '
-    #        if not self.chib_barcode_id['Z']: self.construct += ' Z '
-
-
-        # How many h2?
-        # How many h3?
-        # How many bcX?
-        # How many bcY?
-        # How many bcZ?
-
-        # Won't make general since it will interfere with HLA pipeline when using that to identify real_H1/real_H4
-
-    #    self.dbsPrimaryCoordinates = [self.r1Seq, self.h1[1], self.h2[0], self.r1Qual]
-
-    #    if self.real_h2 and self.real_h3 and self.h3:
-    #        self.construct = 'xyz_barcodes_intact'
-    #    else:
-    #        self.construct = 'missing:'
-    #        if not self.real_H1: self.construct += ' real_h1 '
-    #        if not self.real_H2: self.construct += ' real_h2 '
-    #        if not self.real_H3: self.construct += ' real_h3 '
-    #        if not self.real_H4: self.construct += ' real_h4 '
+        # Looks for which barcode types have been found.
+        if self.chib_barcode_id['X'] and self.chib_barcode_id['Y'] and self.chib_barcode_id['Z']:
+            self.construct += ' and XYZ barcodes found'
+        else:
+            if not self.chib_barcode_id['X']: self.construct += ' bc_X '
+            if not self.chib_barcode_id['Y']: self.construct += ' bc_Y '
+            if not self.chib_barcode_id['Z']: self.construct += ' bc_Z '
 
         return ''
-
-############ PROBABLY WONT NEED THIS ###########
-#
-#    def sequence_matcher(self, read_id, handle_ID): # How can I fetch read_id (or "matchsequence") from object? read_id should be r1Seq of r2Seq.
-#
-#        # Set initial values.
-#        startPosition, endPosition, missmatches = None
-#        missmatchesAllowed = self.analysisfolder.settings.maxHandleMissMatches # Do I need to use this as a input to matchSequence?
-#
-#        matchsequence = self.Handle_id # Will this work? I need to fetch the sequence. Or
-#
-#        # Find perfect matches
-#        perfect_match = re.search(matchsequence, self.read_id)
-#        if perfect_match:
-#            startPosition = perfect_match.start()
-#            endPosition = perfect_match.end()
-#            missmatches = 0
-#            startPosition, endPosition, missmatches = self.handle_ID
-#
-#        # If no perfect match, use hamming distance and max allowed mismatches
-#        else:
-#            self. = self.matchSequence(self.read_id, matchsequence, missmatchesAllowed, breakAtFirstMatch=True)    ### WHAT DOES THIS DO, ERIK? ###
-#            # self.h1 = self.matchSequence(self.r1Seq,H1,missmatchesAllowed,startOfRead=True,breakAtFirstMatch=True)
-#
-#        return ''
