@@ -607,6 +607,8 @@ class ReadPair(object):
 
         # Won't look for anything if not h1 AND h2 is found => H1-bcX-H2-bcY-H3-bcZ-[NNN...] looks like H1-[NNN...]
         # GREPFRICK: Need h2
+
+        # How do I do this for r2Seq? :(
         if self.h1 and self.h2:
 
             # Finds handle 2 and 3 (ChIB handles, not HLA).
@@ -617,6 +619,7 @@ class ReadPair(object):
 
                 # Order: Y - X - Z. Only because dictionary has that order, otherwise for-loop below looks for x bc in y bc list and vice versa.
                 # GREPFRICK: dict order
+                # GREPFRICK: relies on h2 being present
                 positions_list = [[self.real_h2[1],self.real_h3[0]],[self.h1[1],self.real_h2[0]],[self.real_h3[1],self.h2[0]]]
 
                 # Finds barcode sequences in between given positions
