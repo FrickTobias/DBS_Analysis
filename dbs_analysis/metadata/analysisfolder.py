@@ -156,7 +156,8 @@ class AnalysisFolder(object):
         index_file.close()
 
     def read_ChIB_barcode_dict(self,):
-        # This function reads fasta files and saves to dictionaries. Structure demand:
+        """This function reads fasta files and saves to dictionaries."""
+        # Structure demand:
         #
         # >NN.##
         # AAGGTTCC
