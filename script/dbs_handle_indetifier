@@ -74,6 +74,7 @@ def foreachRead(readpair):
 
     if readpair.analysisfolder.settings.type == 'ChIB':
         readpair.xyz_ID_identifier()
+        readpair.fixInsert()
     else:
         readpair.fixInsert()
         readpair.matchdbs()

@@ -637,6 +637,7 @@ class ReadPair(object):
                 else:
                     # GREPFRICK: dict order dependency, 2nd row.
                     positions_list = [[self.h1[1], (self.h1[1]+8)]]
+                    # For r2Seq barcode_types already changed => list out of range if try and use barcode_type[1] again
                     if len(barcode_types) == 3:
                         barcode_types = barcode_types[1]
 
