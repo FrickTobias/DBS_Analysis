@@ -588,7 +588,9 @@ class ReadPair(object):
         self.r2Qual = fastq2.readline().rstrip() # get the quality
 
     def xyz_ID_identifier(self):
-        # Main function for identifying barcode ID:s for ChIB's xyz-system. Gives every read the attribute .barcode.id (a dictionary with keys X, Y and Z).
+        """Main function for identifying and clustering barcode ID:s for ChIB's xyz-system. Gives every read the
+        attribute .barcode.id (a dictionary with keys X, Y and Z). Cluseters are saved to the previously existing
+        clustering systems variable self.cluseterID."""
 
         # Importing metadata.
         from dbs_analysis.sequences import ChIB_H2 as real_h2
@@ -618,40 +620,58 @@ class ReadPair(object):
                 self.real_h2 = self.matchSequence(read_sequence,real_h2,missmatchesAllowed,startOfRead=False,breakAtFirstMatch=True)
                 self.real_h3 = self.matchSequence(read_sequence,real_h3,missmatchesAllowed,startOfRead=False,breakAtFirstMatch=True)
 
-                if self.real_h2[0] != None and self.real_h3[0] != None:
+                # Builds list of positions for barcodes depending on how many handles have been found.
+                # GREPFRICK: If handle not present, assumes bc is 8 bp from end of last handle.
+                # GREPFRICK: dict order
+                # Order: Y - X - Z. Only because dictionary has that order, otherwise for-loop below looks for x bc in y bc list and vice versa.
+                if self.real_h2[0] != None:
 
-                    # Order: Y - X - Z. Only because dictionary has that order, otherwise for-loop below looks for x bc in y bc list and vice versa.
-                    # GREPFRICK: dict order
-                    # GREPFRICK: If h2 not present, assumes last bc sequence is 8 bp.
-                    if self.h2:
-                        positions_list = [[self.real_h2[1],self.real_h3[0]],[self.h1[1],self.real_h2[0]],[self.real_h3[1],self.h2[0]]]
+                    if self.real_h3[0] != None:
+
+                        if self.h2:
+                            positions_list = [[self.real_h2[1],self.real_h3[0]],[self.h1[1],self.real_h2[0]],[self.real_h3[1],self.h2[0]]]
+                        else:
+                            positions_list = [[self.real_h2[1], self.real_h3[0]], [self.h1[1], self.real_h2[0]],[self.real_h3[1],(self.real_h3[1]+8)]]
                     else:
-                        positions_list = [[self.real_h2[1], self.real_h3[0]], [self.h1[1], self.real_h2[0]],[self.real_h3[1],(self.real_h3[1]+8)]]
-                    # Finds barcode sequences in between given positions
-                    for i in range(len(barcode_types)):
+                        positions_list = [[self.real_h2[1], (self.real_h2[1]+8)], [self.h1[1], self.real_h2[0]]]
+                else:
+                    # GREPFRICK: dict order dependency, 2nd row.
+                    positions_list = [[self.h1[1], (self.h1[1]+8)]]
+                    if len(barcode_types) == 3:
+                        barcode_types = barcode_types[1]
 
-                        # Looks in barcode dictionary for perfect match
-                        try:
-                            self.chib_barcode_id[barcode_types[i]] = self.analysisfolder.xyz_bc_dict[barcode_types[i]][revcomp(read_sequence[positions_list[i][0]:positions_list[i][1]])]
-                        # If no perfect match, runs hamming distance.
-                        except KeyError:
-                            for barcode in self.analysisfolder.xyz_bc_dict[barcode_types[i]]:
-                                try:
-                                    # Try since sometimes positions might be in the other read which leads to different string lengths => ValueError from hammin_loop
-                                    missmatch_count = hamming_loop(barcode, revcomp(read_sequence[positions_list[i][0]:positions_list[i][1]]))
-                                except ValueError:
-                                    missmatch_count = 9999999
-                                if missmatch_count <= missmatchesAllowed:
-                                    self.chib_barcode_id[barcode_types[i]] = self.analysisfolder.xyz_bc_dict[barcode_types[i]][barcode]
-                                    break
+                # Finds barcode sequences in between given positions
+                for i in range(len(positions_list)):
 
-        # Function which counts handles and barcodes for summary report.
+                    # Looks in barcode dictionary for perfect match
+                    try:
+                        self.chib_barcode_id[barcode_types[i]] = self.analysisfolder.xyz_bc_dict[barcode_types[i]][revcomp(read_sequence[positions_list[i][0]:positions_list[i][1]])]
+                    # If no perfect match, runs hamming distance.
+                    except KeyError:
+                        for barcode in self.analysisfolder.xyz_bc_dict[barcode_types[i]]:
+                            try:
+                                # Try since sometimes positions might be in the other read which leads to different string lengths => ValueError from hammin_loop
+                                missmatch_count = hamming_loop(barcode, revcomp(read_sequence[positions_list[i][0]:positions_list[i][1]]))
+                            except ValueError:
+                                missmatch_count = 9999999
+                            if missmatch_count <= missmatchesAllowed:
+                                self.chib_barcode_id[barcode_types[i]] = self.analysisfolder.xyz_bc_dict[barcode_types[i]][barcode]
+                                break
+
+
+        # Function which counts handles and barcodes for summary report. Also flags if all barcodes are intact.
         self.xyz_barcode_add_stats()
+
+        # If all barcodes have been identified, gives the read pair a cluster ID.
+        # GREPFRICK: Dependent on barcode major key names.
+        if self.barcodes_intact:
+            self.clusterId = int(self.chib_barcode_id['X']+self.chib_barcode_id['Y']+self.chib_barcode_id['Z'])
 
         return ''
 
     def xyz_barcode_add_stats(self):
-
+        """For ChIB system: identifies handles and overwrites self.construct with ChIB-handles. Also flags for when
+        all (x, y and z) barcodes have been found with self.barcodes_intact."""
         # Looks for which handles have been found.
         if self.h1 and self.real_h2 and self.real_h3 and self.h2:
             self.construct = 'ChIB handles intact '
@@ -668,8 +688,10 @@ class ReadPair(object):
         # Looks for which barcode types have been found.
         # GREPFRICK: hardcoded major key names.
         if self.chib_barcode_id['X'] and self.chib_barcode_id['Y'] and self.chib_barcode_id['Z']:
+            self.barcodes_intact = True # Flag for barcode integrity
             self.construct += 'and XYZ barcodes found'
         else:
+            self.barcodes_intact = False # Flag for barcode intergrity
             self.construct += 'and missing'
             if not self.chib_barcode_id['X']: self.construct += ' bc_X '
             if not self.chib_barcode_id['Y']: self.construct += ' bc_Y '

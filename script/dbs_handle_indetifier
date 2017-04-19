@@ -74,7 +74,6 @@ def foreachRead(readpair):
 
     if readpair.analysisfolder.settings.type == 'ChIB':
         readpair.xyz_ID_identifier()
-        # Cluster reads. How do I fetch that, Erik?
     else:
         readpair.fixInsert()
         readpair.matchdbs()
