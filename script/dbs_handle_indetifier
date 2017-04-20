@@ -474,16 +474,17 @@ class Summary():
 
         print '\n##### SUMMARY #####'
 
-        print self.totalReads
+        print ('\n'+str(self.totalReads)+'\n')
 
-        print 'Directions:'
-        self.analysisfolder.logfile.write ('Directions:\n')
-        for direction,count in self.directions.iteritems():
-            string = str(direction) +'\t'+str(misc.percentage(count,self.totalReads))
-            print string
-            self.analysisfolder.logfile.write (string+'\n')
-        print ''
-        self.analysisfolder.logfile.write ('\n')
+        # Don't need anymore since directions always are the same //Frick
+        #print 'Directions:'
+        #self.analysisfolder.logfile.write ('Directions:\n')
+        #for direction,count in self.directions.iteritems():
+        #    string = str(direction) +'\t'+str(misc.percentage(count,self.totalReads))
+        #    print string
+        #    self.analysisfolder.logfile.write (string+'\n')
+        #print ''
+        #self.analysisfolder.logfile.write ('\n')
 
         print 'CunstructType:'
         self.analysisfolder.logfile.write ('CunstructType:'+'\n')
@@ -494,15 +495,26 @@ class Summary():
         print ''
         self.analysisfolder.logfile.write ('\n')
 
-        print 'DBSmatch:'
-        self.analysisfolder.logfile.write ('DBSmatch:'+'\n')
-        for match,count in self.dbsmatches.iteritems():
-            if match != None: string= ' '+str(match) +'\t'+str(misc.percentage(count,self.totalReads-self.dbsmatches[None]))+' (% of total-None)'
-            else: string= ' '+str(match) +'\t'+str(misc.percentage(count,self.totalReads))+' (% of total)'
-            print string
-            self.analysisfolder.logfile.write (string+'\n')
-        print ''
-        self.analysisfolder.logfile.write ('\n')
+        # If setting set to ChIB, does not print DBSmatch since it reports it in construct types.
+        if self.analysisfolder.settings.type =='ChIB':
+            # Writes the major keys (barcode types) to logfile.
+            print('Barcode types found:')
+            self.analysisfolder.logfile.write('Barcode types found:')
+            for barcode_type in self.analysisfolder.xyz_bc_dict.keys():
+                print barcode_type
+                self.analysisfolder.logfile.write(' ' + barcode_type)
+            print('')
+            self.analysisfolder.logfile.write('\n\n')
+        else:
+            print 'DBSmatch:'
+            self.analysisfolder.logfile.write ('DBSmatch:'+'\n')
+            for match,count in self.dbsmatches.iteritems():
+                if match != None: string= ' '+str(match) +'\t'+str(misc.percentage(count,self.totalReads-self.dbsmatches[None]))+' (% of total-None)'
+                else: string= ' '+str(match) +'\t'+str(misc.percentage(count,self.totalReads))+' (% of total)'
+                print string
+                self.analysisfolder.logfile.write (string+'\n')
+            print ''
+            self.analysisfolder.logfile.write ('\n')
 
         #
         # set results in database

@@ -162,7 +162,7 @@ class AnalysisFolder(object):
         # >NN.##
         # AAGGTTCC
         #
-        # Gives dictionary where ## is linked to AAGGTTCC under major key NN. The NN must be grouped in the fasta file.
+        # Gives dictionary where ## is key for value AAGGTTCC under major key NN. The NN must be grouped in the fasta file.
 
         from dbs_analysis.metadata.settings import Settings
 
@@ -178,7 +178,7 @@ class AnalysisFolder(object):
        # Settings.ChIB_barcode_file
 
         # Opens file and saves entries to dict. Won't work if X, Y, Z is not grouped.
-        import os
+        import sys
         with open(str(self.settings.ChIB_barcode_file), 'r') as barcode_handle:
             for line in barcode_handle:
 
@@ -190,6 +190,10 @@ class AnalysisFolder(object):
 
                     # If new major key, create major key entry in dictionary
                     if not dict_major_key == prev_major_key:
+
+                        # GREPFRICK
+                        # write to summary which keys have been found
+                        #logfile.write('dict major keys found: '+str(dict_major_key))
                         dictionary[dict_major_key] = {}
 
                     # ID to be associated with sequence
@@ -202,6 +206,13 @@ class AnalysisFolder(object):
 
                 # Saves latest dict key to be compared with next row.
                 prev_major_key = dict_major_key
+
+        if dictionary.keys() == ['Y','X','Z']:
+            pass
+        else:
+            sys.stderr.write('\nBarcodes are not given as XYZ, check structure demand on fasta file:\n\n>NN.##\nAAGGTTCC\n\n'
+                             'where NN is X, Y or Z in upper case.\n\n')
+            sys.exit()
 
         AnalysisFolder.xyz_bc_dict = dictionary
 

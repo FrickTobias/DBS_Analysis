@@ -54,7 +54,7 @@ class ReadPair(object):
         self.__str__ = self.outstring
 
         from dbs_analysis.seqdata import SamFlag
-        # mapping info from the bamfile look at pysam and sam/bam file defenition to get info about each field/variable
+        # mapping info from the bamfile look at pysam and sam/bam file definition to get info about each field/variable
         self.bamFilePos = bamFilePos
         self.mappingFlagR1 = SamFlag(mappingFlagR1)
         self.refNameR1 = refNameR1
@@ -664,9 +664,13 @@ class ReadPair(object):
         self.xyz_barcode_add_stats()
 
         # If all barcodes have been identified, gives the read pair a cluster ID.
-        # GREPFRICK: Dependent on barcode major key names.
         if self.barcodes_intact:
-            self.clusterId = int(self.chib_barcode_id['X']+self.chib_barcode_id['Y']+self.chib_barcode_id['Z'])
+            temp_id = ''
+            # Loops over all values in chib_barcode_id dictionary.
+            for value in self.chib_barcode_id.values():
+                temp_id = (temp_id+value)
+
+            self.clusterId=temp_id
 
         return ''
 
