@@ -669,9 +669,7 @@ class ReadPair(object):
             # Loops over all values in chib_barcode_id dictionary.
             for value in self.chib_barcode_id.values():
                 temp_id = (temp_id+value)
-
             self.clusterId=temp_id
-
         return ''
 
     def xyz_barcode_add_stats(self):
@@ -698,8 +696,9 @@ class ReadPair(object):
         else:
             self.barcodes_intact = False # Flag for barcode intergrity
             self.construct += 'and missing'
-            if not self.chib_barcode_id['X']: self.construct += ' bc_X '
-            if not self.chib_barcode_id['Y']: self.construct += ' bc_Y '
-            if not self.chib_barcode_id['Z']: self.construct += ' bc_Z '
+            # Loops over barcode types.
+            for barcode_type in self.chib_barcode_id.keys():
+                # If chib_barcode_id has 'None' as value for key, add one to 'bc_[key]' for missing category.
+                if not self.chib_barcode_id[barcode_type]: self.construct += ' bc_'+barcode_type+' '
 
         return ''
