@@ -175,10 +175,24 @@ class AnalysisFolder(object):
         dictionary = {}
         prev_major_key = None
 
-       # Settings.ChIB_barcode_file
+        # Imports.
+        import sys, os
 
-        # Opens file and saves entries to dict. Won't work if X, Y, Z is not grouped.
-        import sys
+        # Error handling, only continues if ChIB_barcode_file is a file.
+        try:
+            # If directory is a readable file.
+            if os.path.isfile(self.settings.ChIB_barcode_file):
+                pass
+            # If directory is not a readable file, exits run.
+            else:
+                sys.stderr.write(self.settings.ChIB_barcode_file+' does not point to a file, aborting run.\n\n')
+                sys.exit()
+        # If directory not set, exits run.
+        except TypeError:
+            sys.stderr.write('ChIB barcode file not set, aborting run.\n\n')
+            sys.exit()
+
+        # Opens file and saves entries to dict. Won't work if X, Y, Z are not grouped.
         with open(str(self.settings.ChIB_barcode_file), 'r') as barcode_handle:
             for line in barcode_handle:
 
@@ -190,10 +204,6 @@ class AnalysisFolder(object):
 
                     # If new major key, create major key entry in dictionary
                     if not dict_major_key == prev_major_key:
-
-                        # GREPFRICK
-                        # write to summary which keys have been found
-                        #logfile.write('dict major keys found: '+str(dict_major_key))
                         dictionary[dict_major_key] = {}
 
                     # ID to be associated with sequence
