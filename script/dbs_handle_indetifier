@@ -498,8 +498,8 @@ class Summary():
         # If setting set to ChIB, does not print DBSmatch since it reports it in construct types.
         if self.analysisfolder.settings.type =='ChIB':
             # Writes the major keys (barcode types) to logfile.
-            print('Barcode types found:')
-            self.analysisfolder.logfile.write('Barcode types found:')
+            print('Barcode types:')
+            self.analysisfolder.logfile.write('Barcode types:')
             for barcode_type in self.analysisfolder.xyz_bc_dict.keys():
                 print barcode_type
                 self.analysisfolder.logfile.write(' ' + barcode_type)

@@ -673,9 +673,11 @@ class ReadPair(object):
         return ''
 
     def xyz_barcode_add_stats(self):
-        """For ChIB system: identifies handles and overwrites self.construct with ChIB-handles. Also flags for when
-        all (x, y and z) barcodes have been found with self.barcodes_intact."""
-        # Looks for which handles have been found.
+        """For ChIB system: identifies handles and overwrites self.construct with ChIB-handles and xyz-barcodes. Also
+        flags for when all (x, y and z) barcodes have been found with self.barcodes_intact."""
+
+        ### HANDLE INTEGRITY ###
+
         if self.h1 and self.real_h2 and self.real_h3 and self.h2:
             self.construct = 'ChIB handles intact '
         else:
@@ -688,17 +690,26 @@ class ReadPair(object):
             if not self.h2: self.construct += ' ChIB_h4 '
             #if not self.h3: self.construct += 'ChIB_h5'    # Take back if h3 (aka real_h5) is in real reads.
 
-        # Looks for which barcode types have been found.
-        # GREPFRICK: hardcoded major key names.
-        if self.chib_barcode_id['X'] and self.chib_barcode_id['Y'] and self.chib_barcode_id['Z']:
-            self.barcodes_intact = True # Flag for barcode integrity
-            self.construct += 'and XYZ barcodes found'
+        ### BARCODE INTEGRITY ###
+
+        # Checking if checkin if all keys in a dictionary has entry.
+        for barcode_type in self.chib_barcode_id.keys():
+            if self.chib_barcode_id[barcode_type]:
+                all_barcodes_present = True
+            else:
+                all_barcodes_present = False
+                break
+
+        # If all keys have values assigned under them, writes barcodes found.
+        if all_barcodes_present:
+            self.barcodes_intact = True  # Flag for barcode integrity
+            self.construct += 'and all barcodes types found'
         else:
-            self.barcodes_intact = False # Flag for barcode intergrity
+            self.barcodes_intact = False  # Flag for barcode intergrity
             self.construct += 'and missing'
             # Loops over barcode types.
             for barcode_type in self.chib_barcode_id.keys():
                 # If chib_barcode_id has 'None' as value for key, add one to 'bc_[key]' for missing category.
-                if not self.chib_barcode_id[barcode_type]: self.construct += ' bc_'+barcode_type+' '
+                if not self.chib_barcode_id[barcode_type]: self.construct += ' bc_' + barcode_type + ' '
 
         return ''
