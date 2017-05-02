@@ -193,6 +193,8 @@ class AnalysisFolder(object):
             sys.exit()
 
         # Opens file and saves entries to dict. Won't work if X, Y, Z are not grouped.
+        # For future improvement: Add settings for barcode name and order with XYZ as default values. Then check for
+        # integrity as specified by the user and run if correct.
         with open(str(self.settings.ChIB_barcode_file), 'r') as barcode_handle:
             for line in barcode_handle:
 
