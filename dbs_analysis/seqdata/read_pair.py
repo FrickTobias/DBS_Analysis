@@ -93,7 +93,9 @@ class ReadPair(object):
         #r1q is read one quality
         #r2s is read two sequence
         #r2q is read two quality
-        
+
+
+        # Always direction 1->2 //Frick
         if self.direction == '1 -> 2':
             if self.h2:
                 self.insert[0] = self.r1Seq[self.h2[1]:]
@@ -107,7 +109,9 @@ class ReadPair(object):
             if self.individual_id and self.fwd_primer:
                 self.insert[0] = self.r1Seq[self.fwd_primer[0]:]
                 self.insert[2] = self.r1Qual[self.fwd_primer[0]:]
-        
+
+        # Can be removed right? //Frick
+        # (Just makes it harder to understand)
         elif self.direction == '2 -> 1':
             if self.h2:
                 self.insert[0] = self.r2Seq[self.h2[1]:]
@@ -666,6 +670,7 @@ class ReadPair(object):
         # If all barcodes have been identified, gives the read pair a cluster ID.
         if self.barcodes_intact:
             temp_id = ''
+
             # Loops over all values in chib_barcode_id dictionary.
             for value in self.chib_barcode_id.values():
                 temp_id = (temp_id+value)
