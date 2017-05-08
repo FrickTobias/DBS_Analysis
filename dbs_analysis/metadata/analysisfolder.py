@@ -23,6 +23,7 @@ class AnalysisFolder(object):
         self.rawdataPath = self.path+'/rawData'
         self.dataPath = self.path+'/data'# output/input files
         self.temp = self.path+'/temp'# temp
+        self.ChIB_unique_barcodes = set()
         
         self.folders = [self.path,self.logpath,self.rawdataPath,self.dataPath,self.temp]
 
@@ -210,6 +211,7 @@ class AnalysisFolder(object):
 
                     # ID to be associated with sequence
                     number_id = (line.split('.')[1].strip())
+                    #print number_id
                 else:
 
                     # Fetches sequence

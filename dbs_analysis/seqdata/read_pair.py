@@ -617,7 +617,7 @@ class ReadPair(object):
 
             # Loops over first and second read for paired reads.
             # Should I do some kind of revcomp stuff on r2Seq or is its directionality made to fit r1Seq's format?
-            both_read_sequences = [self.r1Seq,self.r2Seq]
+            both_read_sequences = [self.r1Seq]#,self.r2Seq]
             for read_sequence in both_read_sequences:
 
                 # Finds handle 2 and 3 (ChIB handles, not HLA).
@@ -635,10 +635,13 @@ class ReadPair(object):
                         if self.h2:
                             positions_list = [[self.real_h2[1],self.real_h3[0]],[self.h1[1],self.real_h2[0]],[self.real_h3[1],self.h2[0]]]
                         else:
+                            break
                             positions_list = [[self.real_h2[1], self.real_h3[0]], [self.h1[1], self.real_h2[0]],[self.real_h3[1],(self.real_h3[1]+8)]]
                     else:
+                        break
                         positions_list = [[self.real_h2[1], (self.real_h2[1]+8)], [self.h1[1], self.real_h2[0]]]
                 else:
+                    break
                     # GREPFRICK: dict order dependency, 2nd row.
                     positions_list = [[self.h1[1], (self.h1[1]+8)]]
                     # For r2Seq barcode_types already changed => list out of range if try and use barcode_type[1] again
@@ -650,6 +653,7 @@ class ReadPair(object):
 
                     # Looks in barcode dictionary for perfect match
                     try:
+                        # Try to set self_barcode_id[X/Y/Z] to sequence found at self.analysisfolder.xyz_bc_dict[X/Y/Z]
                         self.chib_barcode_id[barcode_types[i]] = self.analysisfolder.xyz_bc_dict[barcode_types[i]][revcomp(read_sequence[positions_list[i][0]:positions_list[i][1]])]
                     # If no perfect match, runs hamming distance.
                     except KeyError:
@@ -667,14 +671,25 @@ class ReadPair(object):
         # Function which counts handles and barcodes for summary report. Also flags if all barcodes are intact.
         self.xyz_barcode_add_stats()
 
+        self.clusterId = None
         # If all barcodes have been identified, gives the read pair a cluster ID.
         if self.barcodes_intact:
             temp_id = ''
 
             # Loops over all values in chib_barcode_id dictionary.
             for value in self.chib_barcode_id.values():
-                temp_id = (temp_id+value)
+                temp_id += str(value)
             self.clusterId=temp_id
+
+            self.analysisfolder.ChIB_unique_barcodes.add(self.clusterId)
+#            ChIB_unique_barcodes = self.analysisfolder.ChIB_unique_barcodes
+#            ChIB_unique_barcodes.update(self.clusterId)
+#            self.analysisfolder.ChIB_unique_barcodes = ChIB_unique_barcodes
+            #print self.analysisfolder.ChIB_unique_barcodes
+            print self.clusterId
+            #print self.analysisfolder.ChIB_unique_barcodes
+
+
         return ''
 
     def xyz_barcode_add_stats(self):

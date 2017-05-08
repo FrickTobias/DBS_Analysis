@@ -496,6 +496,7 @@ class Summary():
                 self.analysisfolder.logfile.write(' ' + barcode_type)
             print('')
             self.analysisfolder.logfile.write('\n\n')
+            print self.analysisfolder.ChIB_unique_barcodes
         else:
             print 'DBSmatch:'
             self.analysisfolder.logfile.write ('DBSmatch:'+'\n')
