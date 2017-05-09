@@ -671,6 +671,8 @@ class ReadPair(object):
         # Function which counts handles and barcodes for summary report. Also flags if all barcodes are intact.
         self.xyz_barcode_add_stats()
 
+#        self.barcodes_intact = True
+
         self.clusterId = None
         # If all barcodes have been identified, gives the read pair a cluster ID.
         if self.barcodes_intact:
@@ -680,6 +682,16 @@ class ReadPair(object):
             for value in self.chib_barcode_id.values():
                 temp_id += str(value)
             self.clusterId=temp_id
+
+            print self.h2
+            print self.h3
+            print self.insert
+
+
+            #print self.h2[1]
+            #
+            self.insert = self.r1Seq[self.h2[1]:len(self.r1Seq)]
+            print self.insert
 
             self.analysisfolder.ChIB_unique_barcodes.add(self.clusterId)
 #            ChIB_unique_barcodes = self.analysisfolder.ChIB_unique_barcodes
@@ -698,7 +710,7 @@ class ReadPair(object):
 
         ### HANDLE INTEGRITY ###
 
-        if self.h1 and self.real_h2 and self.real_h3 and self.h2:
+        if self.h1 and self.real_h2 and self.real_h3 and self.h2 and self.h3:
             self.construct = 'ChIB handles intact '
         else:
             # Overwrites previous report and checks for all handles.
@@ -707,11 +719,12 @@ class ReadPair(object):
             if not self.h1: self.construct += ' ChIB_h1 '
             if not self.real_h2: self.construct += ' ChIB_h2 '
             if not self.real_h3: self.construct += ' ChIB_h3 '
-            if not self.h2: self.construct += ' ChIB_h4 '
+            if not self.h2: self.construct += ' ChIB_h4_h5_h6 '
+            if not self.h3: self.construct += ' ChIB_h6prim '
             #if not self.h3: self.construct += 'ChIB_h5'    # Take back if h3 (aka real_h5) is in real reads.
 
-        if self.h3:
-            self.construct += ' and h6prim '
+      #  if self.h3:
+      #      self.construct += 'and h6prim '
 
         ### BARCODE INTEGRITY ###
 
