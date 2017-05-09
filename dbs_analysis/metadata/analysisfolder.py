@@ -23,7 +23,7 @@ class AnalysisFolder(object):
         self.rawdataPath = self.path+'/rawData'
         self.dataPath = self.path+'/data'# output/input files
         self.temp = self.path+'/temp'# temp
-        self.ChIB_unique_barcodes = set()
+        self.ChIB_unique_barcodes = {}
         
         self.folders = [self.path,self.logpath,self.rawdataPath,self.dataPath,self.temp]
 

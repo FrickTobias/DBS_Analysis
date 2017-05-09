@@ -75,12 +75,10 @@ def foreachRead(readpair):
     if readpair.analysisfolder.settings.type == 'ChIB':
         readpair.xyz_ID_identifier()
         readpair.fixInsert()
-        #print readpair.insert
-        readpair.matchdbs()
-        readpair.dbs = readpair.clusterId
-        readpair.dbsmatch = True
-        #print readpair.dbs
-        #print readpair.dbsmatch
+        #readpair.matchdbs()
+        #readpair.dbs = readpair.clusterId
+        #readpair.dbsmatch = True
+
     else:
         readpair.fixInsert()
         readpair.matchdbs()
@@ -276,10 +274,13 @@ class FastqReader(object):
         # write to files
         #
         minInsertSize = 25
-        if self.analysisfolder.settings.type == 'ChIB':
-            minInsertSize = 0
-            print 'WARNING, NOW RUNNING WITH MINIMUN INESRT SIZE = 0!'
+
+        ### Actiavte if insert should be saves correctly for small test data
+        #if self.analysisfolder.settings.type == 'ChIB':
+        #    minInsertSize = 0
+        #    print 'WARNING, NOW RUNNING WITH MINIMUN INESRT SIZE = 0!'
         #self.analysisfolder.coloredReadMasking.write( pair.outputSeq + '\n')
+
         if pair.insert and pair.dbs and pair.dbsmatch:
             if pair.insert[0] and len(pair.insert[0]) >= minInsertSize and pair.insert[1] and len(pair.insert[1]) >= minInsertSize:
                 self.analysisfolder.fastq_outfile1.write( str(pair.header)+' '+str(pair.dbs)+'\n'+str(pair.insert[0])+'\n+\n'+str(pair.insert[2])+'\n')
@@ -504,7 +505,7 @@ class Summary():
                 self.analysisfolder.logfile.write(' ' + barcode_type)
             print('')
             self.analysisfolder.logfile.write('\n\n')
-            print self.analysisfolder.ChIB_unique_barcodes
+            #print self.analysisfolder.ChIB_unique_barcodes
         else:
             print 'DBSmatch:'
             self.analysisfolder.logfile.write ('DBSmatch:'+'\n')

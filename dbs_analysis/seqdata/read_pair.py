@@ -410,7 +410,7 @@ class ReadPair(object):
 
         # set direction to None (ie. not identified)
         self.direction = None
-        
+
         missmatchesAllowed = self.analysisfolder.settings.maxHandleMissMatches
 
         import re
@@ -422,14 +422,14 @@ class ReadPair(object):
             self.h3 = [0,len(H3),0]
             self.dbsPrimaryCoordinates = [self.r1Seq,self.h1[1],self.h2[0],self.r1Qual]
             self.construct = 'constructOK'
-            
+
             self.h1_in_both_ends = None
             self.h3_in_both_ends = None
             self.h1in2ndReadCoordinates = None
             self.h3in2ndReadCoordinates = None
             self.readIntoh3 = None
             self.readIntoh3Coordinates = None
-            
+
             if self.analysisfolder.settings.IndexReferenceTsv:
                 self.individual_id_primer = self.matchSequence(self.r1Seq,IND_HANDLE_1,missmatchesAllowed,breakAtFirstMatch=True)
                 self.fwd_primer           = self.matchSequence(self.r1Seq,IND_HANDLE_2,missmatchesAllowed,breakAtFirstMatch=True)
@@ -447,7 +447,7 @@ class ReadPair(object):
         startPosition,endPosition,missmatches = self.h1
         if startPosition!=None and startPosition <= 2: self.direction = '1 -> 2'
         if startPosition==None: self.h1 = None
-        
+
         # look for H3 in read one
         if not self.direction:
             self.h3 = self.matchSequence(self.r1Seq,H3,missmatchesAllowed,startOfRead=True,breakAtFirstMatch=True)
@@ -479,7 +479,7 @@ class ReadPair(object):
                     self.direction = '2 -> 1'
                     self.h1 = [startPosition,endPosition,missmatches]
                     self.h1in2ndReadCoordinates = self.h1
-                
+
         # look for readinto h3
         checkSeq = None
         self.readIntoh3 = None
@@ -496,21 +496,21 @@ class ReadPair(object):
         # look for individual index in read 1 //HA
         self.individual_id = None
         if self.direction and not self.h3_in_both_ends:
-            
+
             # find the h2 handle and DBS sequence
             if self.direction == '1 -> 2':
                 self.h2 = self.matchSequence(self.r1Seq,revcomp(H2),missmatchesAllowed,breakAtFirstMatch=True)
                 if not self.h2[0]: self.h2 = None
-                
+
                 if self.h1 and self.h2:
                     self.dbsPrimaryCoordinates = [self.r1Seq,self.h1[1],self.h2[0],self.r1Qual]
-                    
+
                     # look for individual id
                     self.individual_id_primer = self.matchSequence(self.r1Seq,IND_HANDLE_1,missmatchesAllowed,breakAtFirstMatch=True)
                     self.fwd_primer           = self.matchSequence(self.r1Seq,IND_HANDLE_2,missmatchesAllowed,breakAtFirstMatch=True)
                     if self.individual_id_primer[0] and self.fwd_primer[0]: self.individual_id = self.r1Seq[self.individual_id_primer[1]:self.fwd_primer[0]]
                     else: self.individual_id = None
-                
+
                 if self.h1_in_both_ends: # find secondary h2
                     self.annotations['h2_r2_coordinates'] = self.matchSequence(self.r2Seq,revcomp(H2),missmatchesAllowed,breakAtFirstMatch=True)
                     if self.h1in2ndReadCoordinates[0]==0 and self.annotations['h2_r2_coordinates'][0] or (self.h1in2ndReadCoordinates[0] and self.annotations['h2_r2_coordinates'][0]):
@@ -524,11 +524,11 @@ class ReadPair(object):
                     self.dbsPrimaryCoordinates = [self.r2Seq,self.h1[1],self.h2[0],self.r2Qual]
 
             else:pass
-    
+
         #classify construct type
         if self.h1 and self.h2 and self.h3:
             self.construct = 'constructOK'
-        else: 
+        else:
             self.construct ='missing:'
             if not self.h1: self.construct += ' h1 '
             if not self.h3: self.construct += ' h3 '
@@ -553,22 +553,22 @@ class ReadPair(object):
                 break
 
     def getFromFiles(self,):
-        
+
         """ function for retreaving data from files on disc not the database
         currently only the fastqs maybe bam aswell later on"""
-        
+
         from dbs_analysis.seqdata import revcomp
         from dbs_analysis import metadata
-        
+
         tmp = self.analysisfolder.database.c.execute('SELECT filePairId,fastq1,fastq2,readCount,addedToReadsTable,minReadLength FROM fastqs WHERE filePairId == '+str(self.fileOrigin)).fetchone()
         filePairId,fastq1,fastq2,readCount,addedToReadsTable,minReadLength = tmp
-        
+
         #
         # get r1 from fastq
         #
         if fastq1.split('.')[-1] in ['gz','gzip']: #
             import gzip                            # open thr fastq file
-            fastq1 = gzip.open(fastq1)             # 
+            fastq1 = gzip.open(fastq1)             #
         else: fastq1 = open(fastq1)                #
         fastq1.seek(self.r1PositionInFile) # go to the read position
         tmp = fastq1.readline().rstrip().split(' ')[0] # get the header
@@ -582,7 +582,7 @@ class ReadPair(object):
         #
         if fastq2.split('.')[-1] in ['gz','gzip']: #
             import gzip                            # open thr fastq file
-            fastq2 = gzip.open(fastq2)             # 
+            fastq2 = gzip.open(fastq2)             #
         else: fastq2 = open(fastq2)                #
         fastq2.seek(self.r2PositionInFile) # go to the read position
         tmp = fastq2.readline().rstrip().split(' ')[0] # get the header
@@ -635,7 +635,6 @@ class ReadPair(object):
                         if self.h2:
                             positions_list = [[self.real_h2[1],self.real_h3[0]],[self.h1[1],self.real_h2[0]],[self.real_h3[1],self.h2[0]]]
                         else:
-                            #break
                             positions_list = [[self.real_h2[1], self.real_h3[0]], [self.h1[1], self.real_h2[0]],[self.real_h3[1],(self.real_h3[1]+8)]]
                     else:
                         #break
@@ -683,26 +682,11 @@ class ReadPair(object):
                 temp_id += str(value)
             self.clusterId=temp_id
 
-            #print self.h2
-            #print self.h3
-            #self.dbs = self.clusterId
-            #print self.insert
-            #self.dbs = True
-            #self.dbsmatch = True
-
-            #print self.h2[1]
-            #
-            #self.insert = self.r1Seq[self.h2[1]:len(self.r1Seq)]
-            #print self.insert
-
-            self.analysisfolder.ChIB_unique_barcodes.add(self.clusterId)
-#            ChIB_unique_barcodes = self.analysisfolder.ChIB_unique_barcodes
-#            ChIB_unique_barcodes.update(self.clusterId)
-#            self.analysisfolder.ChIB_unique_barcodes = ChIB_unique_barcodes
-            #print self.analysisfolder.ChIB_unique_barcodes
-            #print self.clusterId
-            #print self.analysisfolder.ChIB_unique_barcodes
-
+            try: self.analysisfolder.ChIB_unique_barcodes[self.clusterId].append(self.header)
+            except KeyError:
+                pass
+                self.analysisfolder.ChIB_unique_barcodes[self.clusterId] = {}
+                self.analysisfolder.ChIB_unique_barcodes[self.clusterId] = self.header
 
         return ''
 
@@ -724,9 +708,6 @@ class ReadPair(object):
             if not self.h2: self.construct += ' ChIB_h4_h5_h6 '
             if not self.h3: self.construct += ' ChIB_h6prim '
             #if not self.h3: self.construct += 'ChIB_h5'    # Take back if h3 (aka real_h5) is in real reads.
-
-      #  if self.h3:
-      #      self.construct += 'and h6prim '
 
         ### BARCODE INTEGRITY ###
 
