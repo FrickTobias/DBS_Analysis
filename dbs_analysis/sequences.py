@@ -25,13 +25,13 @@ import seqdata
 ChIB_H1 = 'GCCTGCACACTACAGCGTCC'
 ChIB_H2 = 'AATTACCAGGCCAGTCGGTC'
 ChIB_H3 = 'GATATTGCACGGTTGAACGG'
-ChIB_H4 = seqdata.revcomp('ACGGTTCCTCAATGTCTGCC')
+ChIB_H4_H5_H6 = seqdata.revcomp('ACGGTTCCTCAATGTCTGCCGTAACCTCGGCATTATCGCGGTATTGGACAGGACCT')
 
 # Temporary DBS because I'm not sure if removing it will break stuff.
 ChIB_DBS = 'BDHVBDHVBDHVBDHVBDHV'
 
 # In silico added handle to fit pipeline. Serves as equivalent to H3 in the HLA pipeline.
-ChIB_H_fake = seqdata.revcomp('ACGGTTCCTCAATGTCTGCC')
+ChIB_H6prim = seqdata.revcomp('GGTCCTGTCCAATAC')
 #################### ChIB system #############################################################################
 
 #################### HLA system ##############################################################################
@@ -71,8 +71,8 @@ def sequence_layout(layout='HLA'):
 
         # Stuff which goes strait into HLA pipeline.
         H1 = ChIB_H1
-        H2 = ChIB_H4    # NB ChIB H4 is imported as H2 due to structure of HLA pipeline.
-        H3 = ChIB_H_fake
+        H2 = ChIB_H4_H5_H6    # NB ChIB H4 is imported as H2 due to structure of HLA pipeline.
+        H3 = ChIB_H6prim
         DBS = ChIB_DBS  # Remove if you find where this is used in the pipeline. Something imports it somewhere.
 
         # Custom object sequences for ChIB xyz barcode layout

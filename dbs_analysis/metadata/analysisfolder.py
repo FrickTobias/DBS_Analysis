@@ -211,7 +211,7 @@ class AnalysisFolder(object):
 
                     # ID to be associated with sequence
                     number_id = (line.split('.')[1].strip())
-                    #print number_id
+
                 else:
 
                     # Fetches sequence

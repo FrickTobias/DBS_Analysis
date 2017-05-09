@@ -399,8 +399,8 @@ class ReadPair(object):
 
         elif self.analysisfolder.settings.type == 'ChIB':
             from dbs_analysis.sequences import ChIB_H1 as H1
-            from dbs_analysis.sequences import ChIB_H4 as H2
-            from dbs_analysis.sequences import ChIB_H_fake as H3
+            from dbs_analysis.sequences import ChIB_H4_H5_H6 as H2
+            from dbs_analysis.sequences import ChIB_H6prim as H3
             from dbs_analysis.sequences import ChIB_DBS as DBS
 
         ####################################################################################
@@ -635,13 +635,13 @@ class ReadPair(object):
                         if self.h2:
                             positions_list = [[self.real_h2[1],self.real_h3[0]],[self.h1[1],self.real_h2[0]],[self.real_h3[1],self.h2[0]]]
                         else:
-                            break
+                            #break
                             positions_list = [[self.real_h2[1], self.real_h3[0]], [self.h1[1], self.real_h2[0]],[self.real_h3[1],(self.real_h3[1]+8)]]
                     else:
-                        break
+                        #break
                         positions_list = [[self.real_h2[1], (self.real_h2[1]+8)], [self.h1[1], self.real_h2[0]]]
                 else:
-                    break
+                    #break
                     # GREPFRICK: dict order dependency, 2nd row.
                     positions_list = [[self.h1[1], (self.h1[1]+8)]]
                     # For r2Seq barcode_types already changed => list out of range if try and use barcode_type[1] again
@@ -709,6 +709,9 @@ class ReadPair(object):
             if not self.real_h3: self.construct += ' ChIB_h3 '
             if not self.h2: self.construct += ' ChIB_h4 '
             #if not self.h3: self.construct += 'ChIB_h5'    # Take back if h3 (aka real_h5) is in real reads.
+
+        if self.h3:
+            self.construct += ' and h6prim '
 
         ### BARCODE INTEGRITY ###
 
