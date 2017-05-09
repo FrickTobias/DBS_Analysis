@@ -683,22 +683,24 @@ class ReadPair(object):
                 temp_id += str(value)
             self.clusterId=temp_id
 
-            print self.h2
-            print self.h3
-            print self.insert
-
+            #print self.h2
+            #print self.h3
+            #self.dbs = self.clusterId
+            #print self.insert
+            #self.dbs = True
+            #self.dbsmatch = True
 
             #print self.h2[1]
             #
-            self.insert = self.r1Seq[self.h2[1]:len(self.r1Seq)]
-            print self.insert
+            #self.insert = self.r1Seq[self.h2[1]:len(self.r1Seq)]
+            #print self.insert
 
             self.analysisfolder.ChIB_unique_barcodes.add(self.clusterId)
 #            ChIB_unique_barcodes = self.analysisfolder.ChIB_unique_barcodes
 #            ChIB_unique_barcodes.update(self.clusterId)
 #            self.analysisfolder.ChIB_unique_barcodes = ChIB_unique_barcodes
             #print self.analysisfolder.ChIB_unique_barcodes
-            print self.clusterId
+            #print self.clusterId
             #print self.analysisfolder.ChIB_unique_barcodes
 
 
