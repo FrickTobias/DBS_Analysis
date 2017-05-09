@@ -684,9 +684,9 @@ class ReadPair(object):
 
             try: self.analysisfolder.ChIB_unique_barcodes[self.clusterId].append(self.header)
             except KeyError:
-                pass
-                self.analysisfolder.ChIB_unique_barcodes[self.clusterId] = {}
-                self.analysisfolder.ChIB_unique_barcodes[self.clusterId] = self.header
+                #pass
+                self.analysisfolder.ChIB_unique_barcodes[self.clusterId] = [self.header]
+                #self.analysisfolder.ChIB_unique_barcodes[self.clusterId] = self.header
 
         return ''
 
@@ -707,7 +707,6 @@ class ReadPair(object):
             if not self.real_h3: self.construct += ' ChIB_h3 '
             if not self.h2: self.construct += ' ChIB_h4_h5_h6 '
             if not self.h3: self.construct += ' ChIB_h6prim '
-            #if not self.h3: self.construct += 'ChIB_h5'    # Take back if h3 (aka real_h5) is in real reads.
 
         ### BARCODE INTEGRITY ###
 
