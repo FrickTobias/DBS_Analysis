@@ -377,6 +377,31 @@ class ReadPair(object):
         #else:print ''+outputSeq
         self.outputSeq = outputSeq
 
+    def identify_handles(self):
+
+        # Import stuff to
+        if self.analysisfolder.settings.type == 'HLA':
+            from dbs_analysis.sequences import HLA_H1 as H1
+            from dbs_analysis.sequences import HLA_H2 as H2
+            from dbs_analysis.sequences import HLA_H3 as H3
+            from dbs_analysis.sequences import HLA_DBS as DBS
+        elif self.analysisfolder.settings.type == 'WFA':
+            from dbs_analysis.sequences import WFA_H1 as H1
+            from dbs_analysis.sequences import WFA_H2 as H2
+            from dbs_analysis.sequences import WFA_H3 as H3
+            from dbs_analysis.sequences import WFA_DBS as DBS
+        elif self.analysisfolder.settings.type == 'ChIB':
+            from dbs_analysis.sequences import ChIB_H1 as H1
+            from dbs_analysis.sequences import ChIB_H4_H5_H6 as H2
+            from dbs_analysis.sequences import ChIB_H6prim as H3
+            from dbs_analysis.sequences import ChIB_DBS as DBS
+
+        missmatchesAllowed = self.analysisfolder.settings.maxHandleMissMatches
+
+        self.h1 = self.matchSequence(self.r1Seq, H1, missmatchesAllowed, startOfRead=True, breakAtFirstMatch=True)
+        self.h2 = self.matchSequence(self.r1Seq[(len(H1)+len(DBS)-5):], H2, missmatchesAllowed, startOfRead=False, breakAtFirstMatch=True)
+        self.h3 = self.matchSequence(self.r2Seq, H3, missmatchesAllowed, startOfRead=True, breakAtFirstMatch=True)
+
     def identifyDirection(self,):
         """ function that uses the matchSequence function to find the handles defined in sequences
         """
@@ -525,6 +550,8 @@ class ReadPair(object):
 
             else:pass
 
+        print self.direction
+
         #classify construct type
         if self.h1 and self.h2 and self.h3:
             self.construct = 'constructOK'
@@ -617,7 +644,7 @@ class ReadPair(object):
 
             # Loops over first and second read for paired reads.
             # Should I do some kind of revcomp stuff on r2Seq or is its directionality made to fit r1Seq's format?
-            both_read_sequences = [self.r1Seq]#,self.r2Seq]
+            both_read_sequences = [self.r1Seq]#,self.r2Seq] # Removed since all barcodes should be in R1.
             for read_sequence in both_read_sequences:
 
                 # Finds handle 2 and 3 (ChIB handles, not HLA).

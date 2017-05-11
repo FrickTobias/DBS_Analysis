@@ -30,8 +30,9 @@ ChIB_H3 = 'GATATTGCACGGTTGAACGG'
 #ChIB_H4_H5_H6 = seqdata.revcomp('ACGGTTCCTCAATGT')
 ChIB_H4_H5_H6 = seqdata.revcomp('ACGGTTCCTCAATGTCTGCCGTAACCTCGGCATTATCGCGGTATTGGACAGGACCT')
 
+
 # Temporary DBS because I'm not sure if removing it will break stuff.
-ChIB_DBS = 'BDHVBDHVBDHVBDHVBDHV'
+ChIB_DBS = 'NNNNNNNNAATTACCAGGCCAGTCGGTCNNNNNNNNGATATTGCACGGTTGAACGGNNNNNNNN' \
 
 # In silico added handle to fit pipeline. Serves as equivalent to H3 in the HLA pipeline.
 #ChIB_H6prim = 'GGTCCTGTCCAATAC'

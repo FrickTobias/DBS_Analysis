@@ -70,16 +70,19 @@ def foreachRead(readpair):
     This functions is used mainly by FastqReader.runParallel but also by the non-supported FastqReader.run"""
     
     #readpair.isIlluminaAdapter()
-    readpair.identifyDirection()
 
     if readpair.analysisfolder.settings.type == 'ChIB':
+        readpair.identify_handles()
         readpair.xyz_ID_identifier()
         readpair.fixInsert()
         #readpair.matchdbs()
-        #readpair.dbs = readpair.clusterId
-        #readpair.dbsmatch = True
+
+        # Set some values needed for the foreachprocessed pair function for insert reporting
+        readpair.dbs = readpair.clusterId
+        readpair.dbsmatch = True
 
     else:
+        readpair.identifyDirection()
         readpair.fixInsert()
         readpair.matchdbs()
 
@@ -273,12 +276,13 @@ class FastqReader(object):
         #
         # write to files
         #
-        minInsertSize = 25
+        minInsertSize = 0
 
         ### Actiavte if insert should be saves correctly for small test data
         #if self.analysisfolder.settings.type == 'ChIB':
         #    minInsertSize = 0
         #    print 'WARNING, NOW RUNNING WITH MINIMUN INESRT SIZE = 0!'
+
         #self.analysisfolder.coloredReadMasking.write( pair.outputSeq + '\n')
 
         if pair.insert and pair.dbs and pair.dbsmatch:
