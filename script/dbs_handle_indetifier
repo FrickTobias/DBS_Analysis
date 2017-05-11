@@ -285,10 +285,6 @@ class FastqReader(object):
 
         #self.analysisfolder.coloredReadMasking.write( pair.outputSeq + '\n')
 
-        print ('pair insert: '+str(pair.insert))
-        print ('pair dbs: '+str(pair.dbs))
-        print ('pair dbsmatch: '+str(pair.dbsmatch))
-
         if pair.insert and pair.dbs and pair.dbsmatch:
             if pair.insert[0] and len(pair.insert[0]) >= minInsertSize and pair.insert[1] and len(pair.insert[1]) >= minInsertSize:
                 self.analysisfolder.fastq_outfile1.write( str(pair.header)+' '+str(pair.dbs)+'\n'+str(pair.insert[0])+'\n+\n'+str(pair.insert[2])+'\n')

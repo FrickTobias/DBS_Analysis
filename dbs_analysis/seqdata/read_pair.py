@@ -407,8 +407,9 @@ class ReadPair(object):
 
         # Since sequence sent into matchSequence is not entire read, positions have to be compensated.
         temp = self.matchSequence(self.r1Seq[(len(H1)+len(DBS)-5):], revcomp(H2), missmatchesAllowed, startOfRead=False, breakAtFirstMatch=True)
-        for i in range(len(temp)-1):
-            temp[i] = temp[i]+len(H1)+len(DBS)-5
+        if temp[1] is not None:
+            for i in range(len(temp)-1):
+                temp[i] = temp[i]+len(H1)+len(DBS)-5
         self.h2 = temp
 
         # Compability stuff. Unsure if needed but it is given in perfect match scenario for identifydirection.
@@ -653,15 +654,15 @@ class ReadPair(object):
         from dbs_analysis.hamming_cython_solution import hamming_loop
         from dbs_analysis.seqdata import revcomp
 
-        self.real_h2 = None
-        self.real_h3 = None
+        self.real_h2 = [None, None, None]
+        self.real_h3 = [None, None, None]
 
         barcode_types = self.analysisfolder.xyz_bc_dict.keys()
         # Creates dictionary along its major keys.
         self.chib_barcode_id = {barcode_type: None for barcode_type in barcode_types}
 
         # GREPFRICK: if no h1, read is lost.
-        if self.h1:
+        if self.h1[1]:
 
             # Loops over first and second read for paired reads.
             # Should I do some kind of revcomp stuff on r2Seq or is its directionality made to fit r1Seq's format?
@@ -715,10 +716,6 @@ class ReadPair(object):
                             if missmatch_count <= missmatchesAllowed:
                                 self.chib_barcode_id[barcode_types[i]] = self.analysisfolder.xyz_bc_dict[barcode_types[i]][barcode]
                                 break
-
-
-
-
 
         # Function which counts handles and barcodes for summary report. Also flags if all barcodes are intact.
         self.xyz_barcode_add_stats()
