@@ -25,16 +25,9 @@ import seqdata
 ChIB_H1 = 'GCCTGCACACTACAGCGTCC'
 ChIB_H2 = 'AATTACCAGGCCAGTCGGTC'
 ChIB_H3 = 'GATATTGCACGGTTGAACGG'
-
-
 #ChIB_H4_H5_H6 = seqdata.revcomp('ACGGTTCCTCAATGT')
 ChIB_H4_H5_H6 = seqdata.revcomp('ACGGTTCCTCAATGTCTGCCGTAACCTCGGCATTATCGCGGTATTGGACAGGACCT')
-
-
-# Temporary DBS because I'm not sure if removing it will break stuff.
-ChIB_DBS = 'NNNNNNNNAATTACCAGGCCAGTCGGTCNNNNNNNNGATATTGCACGGTTGAACGGNNNNNNNN' \
-
-# In silico added handle to fit pipeline. Serves as equivalent to H3 in the HLA pipeline.
+ChIB_DBS = 'NNNNNNNNAATTACCAGGCCAGTCGGTCNNNNNNNNGATATTGCACGGTTGAACGGNNNNNNNN'
 #ChIB_H6prim = 'GGTCCTGTCCAATAC'
 ChIB_H6prim = seqdata.revcomp('GGTCCTGTCCAATAC')
 
@@ -85,7 +78,8 @@ def sequence_layout(layout='HLA'):
         real_H1 = ChIB_H1   # Not necessary, same as H2, but less confusing for reading/writing ChIB scripts.
         real_H2 = ChIB_H2
         real_H3 = ChIB_H3
-        real_H4 = ChIB_H4   # Not necessary, same as H2, but less confusing for reading/writing ChIB scripts.
+        real_H4 = ChIB_H4_H5_H6
+        # Not necessary, same as H2, but less confusing for reading/writing ChIB scripts.
 
     #########################################################################################
     else:
