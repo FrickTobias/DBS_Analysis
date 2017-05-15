@@ -713,16 +713,21 @@ class ReadPair(object):
 
                     # If no perfect match, runs hamming distance.
                     except KeyError:
+                        
+                        found_match=[[], 9999999, True]
                         for barcode in self.analysisfolder.xyz_bc_dict[barcode_types[i]]:
                             try:
-                                # Try since sometimes positions might be in the other read which leads to different string lengths => ValueError from hammin_loop
                                 missmatch_count = hamming_loop(barcode, revcomp(read_sequence[positions_list[i][0]:positions_list[i][1]]))
                             except ValueError:
                                 missmatch_count = 9999999
-                            if missmatch_count <= missmatchesAllowed:
-                                self.chib_barcode_id[barcode_types[i]] = self.analysisfolder.xyz_bc_dict[barcode_types[i]][barcode]
-                                break
+                            if missmatch_count <= missmatchesAllowed and missmatch_count < found_match[1]:
+                                found_match = [self.analysisfolder.xyz_bc_dict[barcode_types[i]][barcode], missmatch_count, False] #Create new match
+                            elif missmatch_count <= missmatchesAllowed and missmatch_count == found_match[1]:
+                                found_match[2] = True
 
+                        if found_match[2] == False:
+                            self.chib_barcode_id[barcode_types[i]] = found_match[0]
+                        
         # Function which counts handles and barcodes for summary report. Also flags if all barcodes are intact.
         self.xyz_barcode_add_stats()
 
