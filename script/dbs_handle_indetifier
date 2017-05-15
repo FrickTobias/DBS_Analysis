@@ -490,8 +490,8 @@ class Summary():
 
         print ('\n'+str(self.totalReads)+'\n')
 
-        print 'CunstructType:'
-        self.analysisfolder.logfile.write ('CunstructType:'+'\n')
+        print 'Construct Type:'
+        self.analysisfolder.logfile.write ('Construct Type:'+'\n')
         for constructtype,count in self.constructType.iteritems():
             string = str(constructtype) +'\t'+str(misc.percentage(count,self.totalReads))
             print string

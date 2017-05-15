@@ -396,7 +396,7 @@ class ReadPair(object):
             from dbs_analysis.sequences import WFA_DBS as DBS
         elif self.analysisfolder.settings.type == 'ChIB':
             from dbs_analysis.sequences import ChIB_H1 as H1
-            from dbs_analysis.sequences import ChIB_H4_H5_H6 as H2
+            from dbs_analysis.sequences import ChIB_H6 as H2
             from dbs_analysis.sequences import ChIB_H6prim as H3
             from dbs_analysis.sequences import ChIB_DBS as DBS
 
@@ -425,7 +425,6 @@ class ReadPair(object):
         self.fwd_primer = None
         self.individual_id = None
 
-
     def identifyDirection(self,):
         """ function that uses the matchSequence function to find the handles defined in sequences
         """
@@ -448,7 +447,7 @@ class ReadPair(object):
 
         elif self.analysisfolder.settings.type == 'ChIB':
             from dbs_analysis.sequences import ChIB_H1 as H1
-            from dbs_analysis.sequences import ChIB_H4_H5_H6 as H2
+            from dbs_analysis.sequences import ChIB_H6 as H2
             from dbs_analysis.sequences import ChIB_H6prim as H3
             from dbs_analysis.sequences import ChIB_DBS as DBS
 
@@ -648,6 +647,9 @@ class ReadPair(object):
         # Importing metadata.
         from dbs_analysis.sequences import ChIB_H2 as real_h2
         from dbs_analysis.sequences import ChIB_H3 as real_h3
+        from dbs_analysis.sequences import ChIB_H4 as real_h4
+        from dbs_analysis.sequences import ChIB_H5 as real_h5
+
         missmatchesAllowed = self.analysisfolder.settings.maxHandleMissMatches
 
         # Handle identification.
@@ -656,6 +658,8 @@ class ReadPair(object):
 
         self.real_h2 = [None, None, None]
         self.real_h3 = [None, None, None]
+        self.real_h4 = [None, None, None]
+        self.real_h5 = [None, None, None]
 
         barcode_types = self.analysisfolder.xyz_bc_dict.keys()
         # Creates dictionary along its major keys.
@@ -672,6 +676,8 @@ class ReadPair(object):
                 # Finds handle 2 and 3 (ChIB handles, not HLA).
                 self.real_h2 = self.matchSequence(read_sequence,real_h2,missmatchesAllowed,startOfRead=False,breakAtFirstMatch=True)
                 self.real_h3 = self.matchSequence(read_sequence,real_h3,missmatchesAllowed,startOfRead=False,breakAtFirstMatch=True)
+                self.real_h4 = self.matchSequence(read_sequence,real_h4,missmatchesAllowed,startOfRead=False,breakAtFirstMatch=True)
+                self.real_h5 = self.matchSequence(read_sequence,real_h5,missmatchesAllowed,startOfRead=False,breakAtFirstMatch=True)
 
                 # Builds list of positions for barcodes depending on how many handles have been found.
                 # GREPFRICK: If handle not present, assumes bc is 8 bp from end of last handle.
@@ -681,8 +687,8 @@ class ReadPair(object):
 
                     if self.real_h3[0] != None:
 
-                        if self.h2:
-                            positions_list = [[self.real_h2[1],self.real_h3[0]],[self.h1[1],self.real_h2[0]],[self.real_h3[1],self.h2[0]]]
+                        if self.real_h4[0]:
+                            positions_list = [[self.real_h2[1],self.real_h3[0]],[self.h1[1],self.real_h2[0]],[self.real_h3[1],self.real_h4[0]]]
 
                         else:
                             positions_list = [[self.real_h2[1], self.real_h3[0]], [self.h1[1], self.real_h2[0]],[self.real_h3[1],(self.real_h3[1]+8)]]
@@ -746,7 +752,7 @@ class ReadPair(object):
 
         ### HANDLE INTEGRITY ###
 
-        if self.h1[1] and self.real_h2[1] and self.real_h3[1] and self.h2[1] and self.h3[1]:
+        if self.h1[1] and self.real_h2[1] and self.real_h3[1] and self.real_h4 and self.real_h5 and self.h2[1] and self.h3[1]:
             self.construct = 'ChIB handles intact '
         else:
             # Overwrites previous report and checks for all handles.
@@ -755,7 +761,9 @@ class ReadPair(object):
             if not self.h1[1]: self.construct += ' ChIB_h1 '
             if not self.real_h2[1]: self.construct += ' ChIB_h2 '
             if not self.real_h3[1]: self.construct += ' ChIB_h3 '
-            if not self.h2[1]: self.construct += ' ChIB_h4_h5_h6 '
+            if not self.real_h4[1]: self.construct += ' ChIB_h4 '
+            if not self.real_h5[1]: self.construct += ' ChIB_h5 '
+            if not self.h2[1]: self.construct += ' ChIB_h6 '
             if not self.h3[1]: self.construct += ' ChIB_h6prim '
 
         ### BARCODE INTEGRITY ###

@@ -25,10 +25,11 @@ import seqdata
 ChIB_H1 = 'GCCTGCACACTACAGCGTCC'
 ChIB_H2 = 'AATTACCAGGCCAGTCGGTC'
 ChIB_H3 = 'GATATTGCACGGTTGAACGG'
-#ChIB_H4_H5_H6 = seqdata.revcomp('ACGGTTCCTCAATGT')
 ChIB_H4_H5_H6 = seqdata.revcomp('ACGGTTCCTCAATGTCTGCCGTAACCTCGGCATTATCGCGGTATTGGACAGGACCT')
+ChIB_H4 = seqdata.revcomp('ACGGTTCCTCAATGT')
+ChIB_H5 = seqdata.revcomp('CTGCCGTAACCTCGGCATTA')
+ChIB_H6 = seqdata.revcomp('TCGCGGTATTGGACAGGACCT')
 ChIB_DBS = 'NNNNNNNNAATTACCAGGCCAGTCGGTCNNNNNNNNGATATTGCACGGTTGAACGGNNNNNNNN'
-#ChIB_H6prim = 'GGTCCTGTCCAATAC'
 ChIB_H6prim = seqdata.revcomp('GGTCCTGTCCAATAC')
 
 #################### ChIB system #############################################################################
@@ -70,7 +71,7 @@ def sequence_layout(layout='HLA'):
 
         # Stuff which goes strait into HLA pipeline.
         H1 = ChIB_H1
-        H2 = ChIB_H4_H5_H6    # NB ChIB H4 is imported as H2 due to structure of HLA pipeline.
+        H2 = ChIB_H6    # NB ChIB H4 is imported as H2 due to structure of HLA pipeline.
         H3 = ChIB_H6prim
         DBS = ChIB_DBS  # Remove if you find where this is used in the pipeline. Something imports it somewhere.
 
@@ -78,7 +79,10 @@ def sequence_layout(layout='HLA'):
         real_H1 = ChIB_H1   # Not necessary, same as H2, but less confusing for reading/writing ChIB scripts.
         real_H2 = ChIB_H2
         real_H3 = ChIB_H3
-        real_H4 = ChIB_H4_H5_H6
+        real_H4 = ChIB_H4
+        real_H5 = ChIB_H5
+        real_H6 = ChIB_H6
+        real_H6prim = ChIB_H6prim
         # Not necessary, same as H2, but less confusing for reading/writing ChIB scripts.
 
     #########################################################################################
