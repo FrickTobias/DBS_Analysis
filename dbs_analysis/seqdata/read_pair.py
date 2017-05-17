@@ -669,7 +669,7 @@ class ReadPair(object):
         if self.h1[1]:
 
             # Loops over first and second read for paired reads.
-            # Should I do some kind of revcomp stuff on r2Seq or is its directionality made to fit r1Seq's format?
+            # Should I do some kind wof revcomp stuff on r2Seq or is its directionality made to fit r1Seq's format?
             both_read_sequences = [self.r1Seq]#,self.r2Seq] # Removed since all barcodes should be in R1.
             for read_sequence in both_read_sequences:
 
