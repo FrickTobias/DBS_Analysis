@@ -31,7 +31,7 @@ ChIB_H5 = seqdata.revcomp('CTGCCGTAACCTCGGCATTA')
 ChIB_H6 = seqdata.revcomp('TCGCGGTATTGGACAGGACCT')
 ChIB_DBS = 'NNNNNNNNAATTACCAGGCCAGTCGGTCNNNNNNNNGATATTGCACGGTTGAACGGNNNNNNNN'
 ChIB_H6prim = seqdata.revcomp('GGTCCTGTCCAATAC')
-
+ChIB_H7prim = 'GCAAGGACAAGCCAAGACCG'
 #################### ChIB system #############################################################################
 
 #################### HLA system ##############################################################################
@@ -83,6 +83,7 @@ def sequence_layout(layout='HLA'):
         real_H5 = ChIB_H5
         real_H6 = ChIB_H6
         real_H6prim = ChIB_H6prim
+        real_H7prim = ChIB_H7prim
         # Not necessary, same as H2, but less confusing for reading/writing ChIB scripts.
 
     #########################################################################################
