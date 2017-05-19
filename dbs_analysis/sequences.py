@@ -25,13 +25,13 @@ import seqdata
 ChIB_H1 = 'GCCTGCACACTACAGCGTCC'
 ChIB_H2 = 'AATTACCAGGCCAGTCGGTC'
 ChIB_H3 = 'GATATTGCACGGTTGAACGG'
-ChIB_H4_H5_H6 = seqdata.revcomp('ACGGTTCCTCAATGTCTGCCGTAACCTCGGCATTATCGCGGTATTGGACAGGACCT')
-ChIB_H4 = seqdata.revcomp('ACGGTTCCTCAATGT')
-ChIB_H5 = seqdata.revcomp('CTGCCGTAACCTCGGCATTA')
-ChIB_H6 = seqdata.revcomp('TCGCGGTATTGGACAGGACCT')
+#ChIB_H4_H5_H6 = seqdata.revcomp('ACGGTTCCTCAATGTCTGCCGTAACCTCGGCATTATCGCGGTATTGGACAGGACCT')
+ChIB_H4 = 'ACGGTTCCTCAATGTCTGCC'
+ChIB_H5 = 'GTAACCTCGGCATTATCGCG'
+ChIB_H6 = 'GTATTGGACAGGACC' #Change to real H6, some of H5 included in handle and 3' T.  
 ChIB_DBS = 'NNNNNNNNAATTACCAGGCCAGTCGGTCNNNNNNNNGATATTGCACGGTTGAACGGNNNNNNNN'
-ChIB_H6prim = seqdata.revcomp('GGTCCTGTCCAATAC')
-ChIB_H7prim = 'GCAAGGACAAGCCAAGACCG'
+#ChIB_H6prim = seqdata.revcomp('GGTCCTGTCCAATAC')
+ChIB_H7 = 'CGGTCTTGGCTTGTCCTT' # REAL SEQ 'CGGTCTTGGCTTGTCCTTGC' shortend by two due to NN bases called for frist two bases in reverse read //PH
 #################### ChIB system #############################################################################
 
 #################### HLA system ##############################################################################
@@ -72,7 +72,7 @@ def sequence_layout(layout='HLA'):
         # Stuff which goes strait into HLA pipeline.
         H1 = ChIB_H1
         H2 = ChIB_H6    # NB ChIB H4 is imported as H2 due to structure of HLA pipeline.
-        H3 = ChIB_H6prim
+        H3 = seqdata.revcomp(ChIB_H6)
         DBS = ChIB_DBS  # Remove if you find where this is used in the pipeline. Something imports it somewhere.
 
         # Custom object sequences for ChIB xyz barcode layout
@@ -82,8 +82,8 @@ def sequence_layout(layout='HLA'):
         real_H4 = ChIB_H4
         real_H5 = ChIB_H5
         real_H6 = ChIB_H6
-        real_H6prim = ChIB_H6prim
-        real_H7prim = ChIB_H7prim
+        #real_H6prim = ChIB_H6prim
+        #real_H7prim = ChIB_H7prim
         # Not necessary, same as H2, but less confusing for reading/writing ChIB scripts.
 
     #########################################################################################
