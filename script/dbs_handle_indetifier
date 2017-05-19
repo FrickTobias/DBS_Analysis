@@ -161,9 +161,6 @@ class FastqReader(object):
                 #
                 # Open the files
                 #
-                print "FILES:"
-                print fastq1
-                print fastq2
                 if fastq1.split('.')[-1] in ['gz','gzip']: 
                     file1 = gzip.open(fastq1)
                 else: 
@@ -174,13 +171,9 @@ class FastqReader(object):
                 if fastq2.split('.')[-1] in ['gz','gzip']: 
                     file2 = gzip.open(fastq2)
                 else:
-                    print fastq2
                     try:
                         file2 = open(fastq2,'r')
-                        print fastq2
                     except IOError:
-                        print repr(fastq2)
-                        print repr(fastq2.encode(sys.getfilesystemencoding()))
                         file2 = open(fastq2.encode(sys.getfilesystemencoding()),'r')               
                 #
                 # Parse files
