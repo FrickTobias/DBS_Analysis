@@ -72,9 +72,11 @@ def foreachRead(readpair):
     #readpair.isIlluminaAdapter()
 
     if readpair.analysisfolder.settings.type == 'ChIB':
-        readpair.identify_handles()
+        #readpair.identify_handles()
+        readpair.identifyChIBhandles()
         readpair.xyz_ID_identifier()
-        readpair.fixInsert()
+        readpair.fixChIBInsert()
+        #readpair.fixInsert()
         #readpair.matchdbs()
 
         # Set some values needed for the foreachprocessed pair function for insert reporting
@@ -159,11 +161,27 @@ class FastqReader(object):
                 #
                 # Open the files
                 #
-                if fastq1.split('.')[-1] in ['gz','gzip']: file1 = gzip.open(fastq1)
-                else: file1 = open(fastq1,'r')
-                if fastq2.split('.')[-1] in ['gz','gzip']: file2 = gzip.open(fastq2)
-                else: file2 = open(fastq2,'r')
-                
+                print "FILES:"
+                print fastq1
+                print fastq2
+                if fastq1.split('.')[-1] in ['gz','gzip']: 
+                    file1 = gzip.open(fastq1)
+                else: 
+                    try:
+                        file1 = open(fastq1,'r')
+                    except IOError: #Added to deal with file path error //PH
+                        file1 = open(fastq1.encode(sys.getfilesystemencoding()),'r')
+                if fastq2.split('.')[-1] in ['gz','gzip']: 
+                    file2 = gzip.open(fastq2)
+                else:
+                    print fastq2
+                    try:
+                        file2 = open(fastq2,'r')
+                        print fastq2
+                    except IOError:
+                        print repr(fastq2)
+                        print repr(fastq2.encode(sys.getfilesystemencoding()))
+                        file2 = open(fastq2.encode(sys.getfilesystemencoding()),'r')               
                 #
                 # Parse files
                 #
@@ -284,18 +302,20 @@ class FastqReader(object):
         #    print 'WARNING, NOW RUNNING WITH MINIMUN INESRT SIZE = 0!'
 
         #self.analysisfolder.coloredReadMasking.write( pair.outputSeq + '\n')
-
         if pair.insert and pair.dbs and pair.dbsmatch:
             if pair.insert[0] and len(pair.insert[0]) >= minInsertSize and pair.insert[1] and len(pair.insert[1]) >= minInsertSize:
                 if self.analysisfolder.settings.type == 'ChIB':
-                    self.analysisfolder.fastq_outfile1.write( str(pair.header+'.BC:'+pair.dbs)+'\n'+str(pair.insert[0])+'\n+\n'+str(pair.insert[2])+'\n')
-                    self.analysisfolder.fastq_outfile2.write(str(pair.header+'.BC:'+pair.dbs) + '\n' + str(pair.insert[1]) + '\n+\n' + str(pair.insert[3]) + '\n')
+                    self.analysisfolder.fastq_outfile1.write(str(pair.header + '.BC:' + pair.dbs + '.UMI:' + pair.umi) + '\n' + str(pair.insert[0]) + '\n+\n' + str(pair.insert[2]) + '\n')
+                    self.analysisfolder.fastq_outfile2.write(str(pair.header + '.BC:' + pair.dbs + '.UMI:' + pair.umi) + '\n' + str(pair.insert[1]) + '\n+\n' + str(pair.insert[3]) + '\n')
                 else:
                     self.analysisfolder.fastq_outfile1.write(str(pair.header) + ' ' + str(pair.dbs) + '\n' + str(pair.insert[0]) + '\n+\n' + str(pair.insert[2]) + '\n')
                     self.analysisfolder.fastq_outfile2.write(str(pair.header) + ' ' + str(pair.dbs) + '\n' + str(pair.insert[1]) + '\n+\n' + str(pair.insert[3]) + '\n')
                 pair.annotations['PeInsert'] = True
             elif pair.insert[0] and len(pair.insert[0]) >= minInsertSize:
-                # self.analysisfolder.fastq_outfile3.write( str(pair.header)+' '+str(pair.dbs)+'\n'+str(pair.insert[0])+'\n+\n'+str(pair.insert[2])+'\n')
+                if self.analysisfolder.settings.type == 'ChIB':
+                    self.analysisfolder.fastq_outfile3.write(str(pair.header + '.BC:' + pair.dbs)+' '+str(pair.dbs)+'\n'+str(pair.insert[0])+'\n+\n'+str(pair.insert[2])+'\n')
+                else:
+                    self.analysisfolder.fastq_outfile3.write(str(pair.header)+' '+str(pair.dbs)+'\n'+str(pair.insert[0])+'\n+\n'+str(pair.insert[2])+'\n')
                 pair.annotations['SingletInsert'] = True
             elif pair.insert[1] and len(pair.insert[1]) >= minInsertSize:
                 # self.analysisfolder.fastq_outfile3.write( str(pair.header)+' '+str(pair.dbs)+'\n'+str(pair.insert[1])+'\n+\n'+str(pair.insert[3])+'\n')
@@ -424,6 +444,7 @@ class FastqReader(object):
 
                     if 'Read1IsIlluminaAdapter' in pair.annotations or 'Read2IsIlluminaAdapter' in pair.annotations: adapterCount += 1
         else:
+            adapterCount = 0 # Added due to UnboundLocalError: local variable 'adapterCount' referenced before assignment if running debug mode //PH
             for pair in self.readPairGenerator():
                 pair = foreachRead(pair)
 
@@ -433,7 +454,7 @@ class FastqReader(object):
                 self.foreachProcessedPair(pair)
 
                 if 'Read1IsIlluminaAdapter' in pair.annotations or 'Read2IsIlluminaAdapter' in pair.annotations: adapterCount += 1
-
+                
         # Set the adapter count to the results value in the results database table
         self.analysisfolder.results.setResult('readPairsAreIlluminaAdapters',adapterCount)
 
