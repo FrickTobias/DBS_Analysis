@@ -181,8 +181,7 @@ class ReadPair(object):
         endPosition   = None
         missmatches   = None
         
-        #matchfunk=levenshtein
-        
+        #matchfunk=levenshtein           
         #
         # use regular expression to try and find a perfect match
         #
@@ -198,16 +197,26 @@ class ReadPair(object):
         elif int(maxDistance):
             mindist = [10000,-1]
             goto = len(readsequence)
+             
+            #Included start postion from with search starts from
+            startOfSearch = 0
+            if type(startOfRead) == tuple() and startOfRead[1]:
+                [ startOfRead, startOfSearch ] = startOfRead #input is tuple and second position contains startpostition for search 
+            
             if startOfRead: goto = 10
-            for i in range(goto):
+            for i in range(startOfSearch,goto):
                 
-                if i+len(matchsequence) <= len(readsequence): dist = matchfunk(matchsequence,readsequence[i:i+len(matchsequence)])
-                else: dist = 10001
-                # if breakAtFirstMatch and (matchfunk == misc.hamming_distance or matchfunk == hamming_cython_solution.hamming_loop):
-                #     if dist >= maxDistance:
-                #         return [i,i+len(matchsequence),dist]
+                if i+len(matchsequence) <= len(readsequence): 
+                    dist = matchfunk(matchsequence,readsequence[i:i+len(matchsequence)])
+                else: 
+                    dist = 10001
                 
-                if dist < mindist[0]: mindist =[dist,i]
+                if breakAtFirstMatch and (matchfunk == misc.hamming_distance or matchfunk == hamming_cython_solution.hamming_loop):
+                    if dist <= maxDistance:
+                        return [i,i+len(matchsequence),dist]
+                
+                if dist < mindist[0]: 
+                    mindist =[dist,i]
             
             if mindist[0] < int(maxDistance)+1:
                 startPosition = mindist[1]
@@ -406,19 +415,19 @@ class ReadPair(object):
 
         #FIND HANDLES FOR READ 1
         self.read1_H1 = self.matchSequence(self.r1Seq, H1, missmatchesAllowed, startOfRead=True, breakAtFirstMatch=True)
-        self.read1_H6 = self.matchSequence(self.r1Seq, H6, missmatchesAllowed, startOfRead=False, breakAtFirstMatch=True)
+        self.read1_H6 = self.matchSequence(self.r1Seq, H6, missmatchesAllowed, startOfRead=(False,self.read1_H1[1]), breakAtFirstMatch=True) 
         
         #Look if READ 1 goes into H6prim
-        self.read1IntoH6primCoordinates = self.matchSequence(self.r1Seq,revcomp(H6),missmatchesAllowed,breakAtFirstMatch=True)
+        self.read1IntoH6primCoordinates = self.matchSequence(self.r1Seq,revcomp(H6),missmatchesAllowed,startOfRead=(False, self.read1_H6[1]),breakAtFirstMatch=True)
         if self.read1IntoH6primCoordinates[0] != None:
             self.read1IntoH6prim = True
         
         #FIND HANDLES FOR READ 2
         self.read2_H7prim = self.matchSequence(self.r2Seq, revcomp(H7), missmatchesAllowed, startOfRead=False, breakAtFirstMatch=True)
-        self.read2_H6 = self.matchSequence(self.r2Seq,H6, missmatchesAllowed, startOfRead=False, breakAtFirstMatch=True)
+        self.read2_H6 = self.matchSequence(self.r2Seq, H6, missmatchesAllowed, startOfRead=(False, self.read2_H7prim[1]), breakAtFirstMatch=True)
         
         #Look if READ 2 goes into H6prim
-        self.read2IntoH6primCoordinates = self.matchSequence(self.r2Seq,revcomp(H6),missmatchesAllowed,breakAtFirstMatch=True)
+        self.read2IntoH6primCoordinates = self.matchSequence(self.r2Seq, revcomp(H6), missmatchesAllowed, startOfRead=(False, self.read2_H6[1]), breakAtFirstMatch=True)
         if self.read2IntoH6primCoordinates[0] != None:
             self.read1IntoH6prim = True
         
@@ -775,10 +784,10 @@ class ReadPair(object):
         # GREPFRICK: if no h1, read is lost.
         if self.read1_H1[1]: #Changed from H1 only //PH
             # Finds handle 2 and 3 (ChIB handles, not HLA).
-            self.real_h2 = self.matchSequence(self.r1Seq,real_h2,missmatchesAllowed,startOfRead=False,breakAtFirstMatch=True)
-            self.real_h3 = self.matchSequence(self.r1Seq,real_h3,missmatchesAllowed,startOfRead=False,breakAtFirstMatch=True)
-            self.real_h4 = self.matchSequence(self.r1Seq,real_h4,missmatchesAllowed,startOfRead=False,breakAtFirstMatch=True)
-            self.real_h5 = self.matchSequence(self.r1Seq,real_h5,missmatchesAllowed,startOfRead=False,breakAtFirstMatch=True)
+            self.real_h2 = self.matchSequence(self.r1Seq,real_h2,missmatchesAllowed,startOfRead=(False, self.read1_H1[1]) ,breakAtFirstMatch=True)
+            self.real_h3 = self.matchSequence(self.r1Seq,real_h3,missmatchesAllowed,startOfRead=(False, self.real_h2[1]),breakAtFirstMatch=True)
+            self.real_h4 = self.matchSequence(self.r1Seq,real_h4,missmatchesAllowed,startOfRead=(False,self.real_h3[1]),breakAtFirstMatch=True)
+            self.real_h5 = self.matchSequence(self.r1Seq,real_h5,missmatchesAllowed,startOfRead=(False,self.real_h4[1]),breakAtFirstMatch=True)
 
             # Builds list of positions for barcodes depending on how many handles have been found.
             # GREPFRICK: If handle not present, assumes bc is 8 bp from end of last handle.
