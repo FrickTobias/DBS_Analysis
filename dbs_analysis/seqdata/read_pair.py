@@ -197,12 +197,11 @@ class ReadPair(object):
         elif int(maxDistance):
             mindist = [10000,-1]
             goto = len(readsequence)
-             
             #Included start postion from with search starts from
             startOfSearch = 0
             if type(startOfRead) == tuple() and startOfRead[1]:
-                [ startOfRead, startOfSearch ] = startOfRead #input is tuple and second position contains startpostition for search 
-            
+                [startOfRead, startOfSearch] = startOfRead
+                
             if startOfRead: goto = 10
             for i in range(startOfSearch,goto):
                 
@@ -212,13 +211,12 @@ class ReadPair(object):
                     dist = 10001
                 
                 if breakAtFirstMatch and (matchfunk == misc.hamming_distance or matchfunk == hamming_cython_solution.hamming_loop):
-                    if dist <= maxDistance:
+                    if dist <= int(maxDistance):
                         return [i,i+len(matchsequence),dist]
-                
-                if dist < mindist[0]: 
+                elif dist < mindist[0]: 
                     mindist =[dist,i]
             
-            if mindist[0] < int(maxDistance)+1:
+            if mindist[0]<=int(maxDistance):
                 startPosition = mindist[1]
                 endPosition = mindist[1]+len(matchsequence)
                 missmatches = mindist[0]
@@ -226,7 +224,7 @@ class ReadPair(object):
                 startPosition = None
                 endPosition = None
                 missmatches = None
-
+        
         return [startPosition,endPosition,missmatches]
 
     def makeColoredOut(self, terminalcolor=True, htmlcolor=False):
@@ -386,6 +384,10 @@ class ReadPair(object):
         #else:print ''+outputSeq
         self.outputSeq = outputSeq
 
+########################
+#***********************
+########################
+
     def identifyChIBhandles(self, ):
         """Combines identify direction and fixInserts for ChIB analysis //PH
         
@@ -398,12 +400,21 @@ class ReadPair(object):
         # Import handles and functions
         from dbs_analysis.seqdata import revcomp
         from dbs_analysis.sequences import ChIB_H1 as H1        
+        from dbs_analysis.sequences import ChIB_H2 as H2        
+        from dbs_analysis.sequences import ChIB_H3 as H3        
+        from dbs_analysis.sequences import ChIB_H4 as H4        
+        from dbs_analysis.sequences import ChIB_H5 as H5        
+        
         from dbs_analysis.sequences import ChIB_H6 as H6
-        from dbs_analysis.sequences import ChIB_H7 as H7        
+        from dbs_analysis.sequences import ChIB_H7 as H7
+        
 
         missmatchesAllowed = self.analysisfolder.settings.maxHandleMissMatches
-
         self.read1_H1 = [None]*3
+        self.read1_H2 = [None]*3 
+        self.read1_H3 = [None]*3
+        self.read1_H4 = [None]*3
+        self.read1_H5 = [None]*3
         self.read1_H6 = [None]*3
         self.read1IntoH6prim = None
         self.read1IntoH6primCoordinates = [None]*3
@@ -415,8 +426,13 @@ class ReadPair(object):
 
         #FIND HANDLES FOR READ 1
         self.read1_H1 = self.matchSequence(self.r1Seq, H1, missmatchesAllowed, startOfRead=True, breakAtFirstMatch=True)
-        self.read1_H6 = self.matchSequence(self.r1Seq, H6, missmatchesAllowed, startOfRead=(False,self.read1_H1[1]), breakAtFirstMatch=True) 
+        self.read1_H2 = self.matchSequence(self.r1Seq, H2, missmatchesAllowed, startOfRead=(False,self.read1_H1[1]), breakAtFirstMatch=True)
+        self.read1_H3 = self.matchSequence(self.r1Seq, H3, missmatchesAllowed, startOfRead=(False,self.read1_H2[1]), breakAtFirstMatch=True)
+        self.read1_H4 = self.matchSequence(self.r1Seq, H4, missmatchesAllowed, startOfRead=(False,self.read1_H3[1]), breakAtFirstMatch=True)
+        self.read1_H5 = self.matchSequence(self.r1Seq, H5, missmatchesAllowed, startOfRead=(False,self.read1_H4[1]), breakAtFirstMatch=True)
+        self.read1_H6 = self.matchSequence(self.r1Seq, H6, missmatchesAllowed, startOfRead=(False,self.read1_H5[1]), breakAtFirstMatch=True) 
         
+
         #Look if READ 1 goes into H6prim
         self.read1IntoH6primCoordinates = self.matchSequence(self.r1Seq,revcomp(H6),missmatchesAllowed,startOfRead=(False, self.read1_H6[1]),breakAtFirstMatch=True)
         if self.read1IntoH6primCoordinates[0] != None:
@@ -458,29 +474,30 @@ class ReadPair(object):
         #r2s is read two sequence
         #r2q is read two quality
         
-        #FIX INSERT FOR READ 1
-        if self.read1_H6[0] != None:
+        if 'ChIB handles intact ' in self.construct and 'and all barcodes types found' in self.construct:
+            #FIX INSERT FOR READ 1
             if self.read1IntoH6prim:
                 self.insert[0] = self.r1Seq[self.read1_H6[1]:self.read1IntoH6primCoordinates[0]]
                 self.insert[2] = self.r1Qual[self.read1_H6[1]:self.read1IntoH6primCoordinates[0]]
             else:
                 self.insert[0] = self.r1Seq[self.read1_H6[1]:]
                 self.insert[2] = self.r1Qual[self.read1_H6[1]:]
-                        
-        #FIX INSERT AND UMI FOR READ 2
-        if self.read2_H7prim[0] != None:
-            if self.read2_H6[0] != None:
-                self.umi = self.r2Seq[self.read2_H7prim[1]:self.read2_H6[0]]
-                if self.read2IntoH6prim:
-                    self.insert[1] = self.r2Seq[self.read2_H6[1]:self.read2IntoH6primCoordinates[0]]
-                    self.insert[3] = self.r2Qual[self.read2_H6[1]:self.read2IntoH6primCoordinates[0]]                
-                else:
-                    self.insert[1] = self.r2Seq[self.read2_H6[1]:]
-                    self.insert[3] = self.r2Qual[self.read2_H6[1]:]                
-        
+                   
+            #FIX INSERT FOR READ 2 
+            self.umi = self.r2Seq[self.read2_H7prim[1]:self.read2_H6[0]]
+            if self.read2IntoH6prim:
+                self.insert[1] = self.r2Seq[self.read2_H6[1]:self.read2IntoH6primCoordinates[0]]
+                self.insert[3] = self.r2Qual[self.read2_H6[1]:self.read2IntoH6primCoordinates[0]]                
+            else:
+                self.insert[1] = self.r2Seq[self.read2_H6[1]:]
+                self.insert[3] = self.r2Qual[self.read2_H6[1]:]                
+    
         if self.insert == [None,None,None,None]: self.insert = None
         return 0
 
+########################
+#***********************
+########################
 
     def identify_handles(self):
         """New version of identifyDirection() which only looks for handles in specific reads. So this function identifies
@@ -755,52 +772,57 @@ class ReadPair(object):
         fastq2.readline().rstrip() # trash the "+"
         self.r2Qual = fastq2.readline().rstrip() # get the quality
 
+########################
+#***********************
+########################
+
     def xyz_ID_identifier(self):
         """Main function for identifying and clustering barcode ID:s for ChIB's xyz-system. Gives every read the
         attribute .barcode.id (a dictionary with keys X, Y and Z). Cluseters are saved to the previously existing
         clustering systems variable self.cluseterID."""
 
         # Importing metadata.
-        from dbs_analysis.sequences import ChIB_H2 as real_h2
-        from dbs_analysis.sequences import ChIB_H3 as real_h3
-        from dbs_analysis.sequences import ChIB_H4 as real_h4
-        from dbs_analysis.sequences import ChIB_H5 as real_h5
+        #from dbs_analysis.sequences import ChIB_H2 as real_h2
+        #from dbs_analysis.sequences import ChIB_H3 as real_h3
+        #from dbs_analysis.sequences import ChIB_H4 as real_h4
+        #from dbs_analysis.sequences import ChIB_H5 as real_h5
 
+        #Require missmatches to be at most 1
         missmatchesAllowed = 1 #self.analysisfolder.settings.maxHandleMissMatches
 
         # Handle identification.
         from dbs_analysis.hamming_cython_solution import hamming_loop
         from dbs_analysis.seqdata import revcomp
 
-        self.real_h2 = [None, None, None]
-        self.real_h3 = [None, None, None]
-        self.real_h4 = [None, None, None]
-        self.real_h5 = [None, None, None]
+        #self.real_h2 = [None, None, None]
+        #self.real_h3 = [None, None, None]
+        #self.real_h4 = [None, None, None]
+        #self.real_h5 = [None, None, None]
 
         barcode_types = ['X','Y','Z'] #self.analysisfolder.xyz_bc_dict.keys()
         # Creates dictionary along its major keys.
         self.chib_barcode_id = {barcode_type: None for barcode_type in barcode_types}
        
         # GREPFRICK: if no h1, read is lost.
-        if self.read1_H1[1]: #Changed from H1 only //PH
+        if self.read1_H1[1] and self.read1_H4[1] and self.read1_H5[1] and self.read1_H6[1]: #Changed from H1 only //PH
             # Finds handle 2 and 3 (ChIB handles, not HLA).
-            self.real_h2 = self.matchSequence(self.r1Seq,real_h2,missmatchesAllowed,startOfRead=(False, self.read1_H1[1]) ,breakAtFirstMatch=True)
-            self.real_h3 = self.matchSequence(self.r1Seq,real_h3,missmatchesAllowed,startOfRead=(False, self.real_h2[1]),breakAtFirstMatch=True)
-            self.real_h4 = self.matchSequence(self.r1Seq,real_h4,missmatchesAllowed,startOfRead=(False,self.real_h3[1]),breakAtFirstMatch=True)
-            self.real_h5 = self.matchSequence(self.r1Seq,real_h5,missmatchesAllowed,startOfRead=(False,self.real_h4[1]),breakAtFirstMatch=True)
+            #self.real_h2 = self.matchSequence(self.r1Seq,real_h2,missmatchesAllowed,startOfRead=(False, self.read1_H1[1]) ,breakAtFirstMatch=True)
+            #self.real_h3 = self.matchSequence(self.r1Seq,real_h3,missmatchesAllowed,startOfRead=(False, self.real_h2[1]),breakAtFirstMatch=True)
+            #self.real_h4 = self.matchSequence(self.r1Seq,real_h4,missmatchesAllowed,startOfRead=(False,self.real_h3[1]),breakAtFirstMatch=True)
+            #self.real_h5 = self.matchSequence(self.r1Seq,real_h5,missmatchesAllowed,startOfRead=(False,self.real_h4[1]),breakAtFirstMatch=True)
 
             # Builds list of positions for barcodes depending on how many handles have been found.
             # GREPFRICK: If handle not present, assumes bc is 8 bp from end of last handle.
             # GREPFRICK: dict order
             # Order: Y - X - Z. Only because dictionary has that order, otherwise for-loop below looks for x bc in y bc list and vice versa.
-            if self.real_h2[0] != None:
-                if self.real_h3[0] != None:
-                    if self.real_h4[0] != None:
-                        positions_list = [[self.read1_H1[1],self.real_h2[0]],[self.real_h2[1],self.real_h3[0]],[self.real_h3[1],self.real_h4[0]]]
+            if self.read1_H2[0] != None:
+                if self.read1_H3[0] != None:
+                    if self.read1_H4[0] != None:
+                        positions_list = [[self.read1_H1[1],self.read1_H2[0]],[self.read1_H2[1],self.read1_H3[0]],[self.read1_H3[1],self.read1_H4[0]]]
                     else:
-                        positions_list = [[self.read1_H1[1], self.real_h2[0]],[self.real_h2[1], self.real_h3[0]], [self.real_h3[1],(self.real_h3[1]+8)]]
+                        positions_list = [[self.read1_H1[1], self.read1_H2[0]],[self.read1_H2[1], self.read1_H3[0]], [self.read1_H3[1],(self.read1_H3[1]+8)]]
                 else:
-                    positions_list = [[self.read1_H1[1], self.real_h2[0]],[self.real_h2[1], (self.real_h2[1]+8)]]
+                    positions_list = [[self.read1_H1[1], self.read1_H2[0]],[self.read1_H2[1], (self.read1_H2[1]+8)]]
             else:
                 positions_list = [[self.read1_H1[1], (self.read1_H1[1]+8)]]
             
@@ -847,21 +869,24 @@ class ReadPair(object):
 
         ### HANDLE INTEGRITY ###
 
-        if self.read1_H1[1] and self.real_h2[1] and self.real_h3[1] and self.real_h4 and self.real_h5 and self.read1_H6[1] and self.read2_H7prim[1] and self.read2_H6[1]:
-            self.construct = 'ChIB handles intact '
+        if self.read1_H1[1] and self.read1_H2[1] and self.read1_H3[1] and self.read1_H4[1] and self.read1_H5[1] and self.read1_H6[1] and self.read2_H7prim[1] and self.read2_H6[1]:
+            self.construct = 'ChIB handles intact'
         else:
             # Overwrites previous report and checks for all handles.
             # GREPFRICK: Not necessary to overwrite since h1, h2 and h3 presence already known.
-            self.construct = 'missing'
-            if not self.read1_H1[1]: self.construct += ' ChIB_h1 '
-            if not self.real_h2[1]: self.construct += ' ChIB_h2 '
-            if not self.real_h3[1]: self.construct += ' ChIB_h3 '
-            if not self.real_h4[1]: self.construct += ' ChIB_h4 '
-            if not self.real_h5[1]: self.construct += ' ChIB_h5 '
-            if not self.read1_H6[1]: self.construct += ' ChIB_h6 '
-            if not self.read2_H6[1]: self.construct += ' ChIB_h6prim '
-            if not self.read2_H7prim[1]: self.construct += ' ChIB_h7 '
-
+            self.construct = 'Missing '
+            count = 0
+            if not self.read1_H1[1]: count += 1 #self.construct += ' ChIB_h1 '
+            if not self.read1_H2[1]: count += 1 #self.construct += ' ChIB_h2 '
+            if not self.read1_H3[1]: count += 1 #self.construct += ' ChIB_h3 '
+            if not self.read1_H4[1]: count += 1 #self.construct += ' ChIB_h4 '
+            if not self.read1_H5[1]: count += 1 #self.construct += ' ChIB_h5 '
+            if not self.read1_H6[1]: count += 1 #self.construct += ' ChIB_h6 '
+            if not self.read2_H6[1]: count += 1 #self.construct += ' ChIB_h6prim '
+            if not self.read2_H7prim[1]: count += 1 #self.construct += ' ChIB_h7 '
+            self.construct += str(count)+ ' handle(s)'
+        if self.read1IntoH6prim or self.read2IntoH6prim:
+            self.construct += ', is intoH6prim'  
         ### BARCODE INTEGRITY ###
 
         # Checking if checkin if all keys in a dictionary has entry.
@@ -875,13 +900,12 @@ class ReadPair(object):
         # If all keys have values assigned under them, writes barcodes found.
         if all_barcodes_present:
             self.barcodes_intact = True  # Flag for barcode integrity
-            self.construct += 'and all barcodes types found'
+            self.construct += ' and all barcodes types found'
         else:
             self.barcodes_intact = False  # Flag for barcode intergrity
-            self.construct += 'and missing'
+            self.construct += ' and missing'
             # Loops over barcode types.
             for barcode_type in self.chib_barcode_id.keys():
                 # If chib_barcode_id has 'None' as value for key, add one to 'bc_[key]' for missing category.
                 if not self.chib_barcode_id[barcode_type]: self.construct += ' bc_' + barcode_type + ' '
-
         return ''
