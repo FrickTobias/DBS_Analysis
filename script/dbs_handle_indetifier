@@ -81,7 +81,7 @@ def foreachRead(readpair):
 
         # Set some values needed for the foreachprocessed pair function for insert reporting
         readpair.dbs = readpair.clusterId
-        readpair.dbsmatch = True
+        #readpair.dbsmatch = True
 
     else:
         readpair.identifyDirection()
@@ -298,8 +298,12 @@ class FastqReader(object):
         if pair.insert and pair.dbs and pair.dbsmatch:
             if pair.insert[0] and len(pair.insert[0]) >= minInsertSize and pair.insert[1] and len(pair.insert[1]) >= minInsertSize:
                 if self.analysisfolder.settings.type == 'ChIB':
-                    self.analysisfolder.fastq_outfile1.write(str(pair.header + '.BC:' + pair.dbs + '.UMI:' + pair.umi) + '\n' + str(pair.insert[0]) + '\n+\n' + str(pair.insert[2]) + '\n')
-                    self.analysisfolder.fastq_outfile2.write(str(pair.header + '.BC:' + pair.dbs + '.UMI:' + pair.umi) + '\n' + str(pair.insert[1]) + '\n+\n' + str(pair.insert[3]) + '\n')
+                    if pair.umi:
+                        self.analysisfolder.fastq_outfile1.write(str(pair.header + '.BC:' + pair.dbs + '.UMI:' + pair.umi) + '\n' + str(pair.insert[0]) + '\n+\n' + str(pair.insert[2]) + '\n')
+                        self.analysisfolder.fastq_outfile2.write(str(pair.header + '.BC:' + pair.dbs + '.UMI:' + pair.umi) + '\n' + str(pair.insert[1]) + '\n+\n' + str(pair.insert[3]) + '\n')
+                    else:
+                        self.analysisfolder.fastq_outfile1.write(str(pair.header + '.BC:' + pair.dbs) + '\n' + str(pair.insert[0]) + '\n+\n' + str(pair.insert[2]) + '\n')
+                        self.analysisfolder.fastq_outfile2.write(str(pair.header + '.BC:' + pair.dbs) + '\n' + str(pair.insert[1]) + '\n+\n' + str(pair.insert[3]) + '\n')
                 else:
                     self.analysisfolder.fastq_outfile1.write(str(pair.header) + ' ' + str(pair.dbs) + '\n' + str(pair.insert[0]) + '\n+\n' + str(pair.insert[2]) + '\n')
                     self.analysisfolder.fastq_outfile2.write(str(pair.header) + ' ' + str(pair.dbs) + '\n' + str(pair.insert[1]) + '\n+\n' + str(pair.insert[3]) + '\n')
@@ -488,7 +492,12 @@ class Summary():
         self.dbsmatches = {}
         self.analysisfolder = analysisfolder
         self.logfile = logfile
-
+        if self.analysisfolder.settings.type =='ChIB':
+            self.uniqueBarcodes = {} #count unique bc combinations
+            self.xBarcodes = {} #count x bc freq
+            self.yBarcodes = {} #count y bc freq
+            self.zBarcodes = {} #count z bc freq
+            self.insertsFixed = 0
     def add(self, readpair):
         """ add the pair values to the summary statistics """
         self.totalReads += 1
@@ -498,7 +507,24 @@ class Summary():
         except KeyError: self.constructType[readpair.construct] = 1
         try: self.dbsmatches[readpair.dbsmatch] += 1
         except KeyError: self.dbsmatches[readpair.dbsmatch] = 1
-
+        if self.analysisfolder.settings.type =='ChIB': 
+            if readpair.barcodes_intact:
+                try: self.uniqueBarcodes[readpair.dbs] += 1
+                except KeyError: self.uniqueBarcodes[readpair.dbs] = 1
+            
+            if readpair.chib_barcode_id['X']:
+                try: self.xBarcodes[readpair.chib_barcode_id['X']] += 1
+                except KeyError: self.xBarcodes[readpair.chib_barcode_id['X']] = 1
+            if readpair.chib_barcode_id['Y']:
+                try: self.yBarcodes[readpair.chib_barcode_id['Y']] += 1
+                except KeyError: self.yBarcodes[readpair.chib_barcode_id['Y']] = 1
+            if readpair.chib_barcode_id['Z']:
+                try: self.zBarcodes[readpair.chib_barcode_id['Z']] += 1
+                except KeyError: self.zBarcodes[readpair.chib_barcode_id['Z']] = 1
+            
+            if readpair.insert:
+                self.insertsFixed +=1
+            
     def printsummary(self):
         """ write the current status of all counters to logfile and set results in database """
 
@@ -510,15 +536,25 @@ class Summary():
 
         print 'Construct Type:'
         self.analysisfolder.logfile.write ('Construct Type:'+'\n')
+        print_out = []
         for constructtype,count in self.constructType.iteritems():
             string = str(constructtype) +'\t'+str(misc.percentage(count,self.totalReads))
-            print string
+            print_out.append([str(constructtype),str(misc.percentage(count,self.totalReads))])
+            
+            #if float(misc.percentage(count,self.totalReads))>0.5: print string
+            
             self.analysisfolder.logfile.write (string+'\n')
+        print 'Top 10 most common constructs:'
+        print_out=sorted(print_out, key=lambda x:float(x[1]), reverse=True)
+        for out in print_out[:10]:
+            print '\t'.join(out)
         print ''
         self.analysisfolder.logfile.write ('\n')
 
         # If setting set to ChIB, does not print DBSmatch since it reports it in construct types.
         if self.analysisfolder.settings.type =='ChIB':
+            print 'Percent of reads with inserts: ' + str(misc.percentage(self.insertsFixed, self.totalReads))
+            print ' '
             # Writes the major keys (barcode types) to logfile.
             print('Barcode types:')
             self.analysisfolder.logfile.write('Barcode types:')
@@ -527,6 +563,55 @@ class Summary():
                 self.analysisfolder.logfile.write(' ' + barcode_type)
             print('')
             self.analysisfolder.logfile.write('\n\n')
+            
+            print('Top 10 unique barcode IDs:')
+            print_out = []
+            for barcode_id,count in self.uniqueBarcodes.iteritems():
+                print_out.append([str(barcode_id),str(misc.percentage(count,sum(list(self.uniqueBarcodes.values()))))])
+                
+            print_out=sorted(print_out, key=lambda x:float(x[1]), reverse=True)
+            for out in print_out[:10]:
+                print '\t'.join(out)
+            print 'Percent unique barcodes found of all possible combinations: '+ str(misc.percentage(len(print_out),96*96*96))
+            print('')
+
+            print('Top 10 Bc.X IDs:')
+            print_out = []
+            for x_id,count in self.xBarcodes.iteritems():
+                print_out.append([str(x_id),str(misc.percentage(count,sum(list(self.xBarcodes.values()))))])
+            
+            print_out=sorted(print_out, key=lambda x:float(x[1]), reverse=True)
+            
+            for out in print_out[:10]:
+                print '\t'.join(out)
+            print 'Percent Bc.X found of possible: '+ str(misc.percentage(len(print_out),96))
+            print ''
+            
+            print('Top 10 Bc.Y IDs:')
+            print_out = []
+            for y_id,count in self.yBarcodes.iteritems():
+                print_out.append([str(y_id),str(misc.percentage(count,sum(list(self.yBarcodes.values()))))])
+            
+            print_out=sorted(print_out, key=lambda x:float(x[1]), reverse=True)
+            
+            for out in print_out[:10]:
+                print '\t'.join(out)
+            print 'Percent Bc.Y found of possible: '+ str(misc.percentage(len(print_out),96))
+            print ' '
+            
+            print('Top 10 Bc.Z IDs:')
+            print_out = []
+            for z_id,count in self.zBarcodes.iteritems():
+                print_out.append([str(z_id),str(misc.percentage(count,sum(list(self.zBarcodes.values()))))])
+            
+            print_out=sorted(print_out, key=lambda x:float(x[1]), reverse=True)
+            
+            for out in print_out[:10]:
+                print '\t'.join(out)
+            print 'Percent Bc.Z found of possible: '+ str(misc.percentage(len(print_out),96))
+            print('')
+
+            
             #print self.analysisfolder.ChIB_unique_barcodes
         else:
             print 'DBSmatch:'
