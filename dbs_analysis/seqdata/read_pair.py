@@ -201,7 +201,8 @@ class ReadPair(object):
             startOfSearch = 0
             if type(startOfRead) == tuple() and startOfRead[1]:
                 [startOfRead, startOfSearch] = startOfRead
-                
+                startOfRead -=10
+            
             if startOfRead: goto = 10
             for i in range(startOfSearch,goto):
                 
@@ -439,7 +440,7 @@ class ReadPair(object):
             self.read1IntoH6prim = True
         
         #FIND HANDLES FOR READ 2
-        self.read2_H7prim = self.matchSequence(self.r2Seq, revcomp(H7), missmatchesAllowed, startOfRead=False, breakAtFirstMatch=True)
+        self.read2_H7prim = self.matchSequence(self.r2Seq, revcomp(H7), missmatchesAllowed, startOfRead=True, breakAtFirstMatch=True)
         self.read2_H6 = self.matchSequence(self.r2Seq, H6, missmatchesAllowed, startOfRead=(False, self.read2_H7prim[1]), breakAtFirstMatch=True)
         
         #Look if READ 2 goes into H6prim
@@ -474,24 +475,45 @@ class ReadPair(object):
         #r2s is read two sequence
         #r2q is read two quality
         
-        if 'ChIB handles intact ' in self.construct and 'and all barcodes types found' in self.construct:
+        if self.barcodes_intact and (self.read1_H6[1] or self.read1_H5[1]) and (self.read2_H6[1] or self.read2_H7prim[1]):
             #FIX INSERT FOR READ 1
-            if self.read1IntoH6prim:
-                self.insert[0] = self.r1Seq[self.read1_H6[1]:self.read1IntoH6primCoordinates[0]]
-                self.insert[2] = self.r1Qual[self.read1_H6[1]:self.read1IntoH6primCoordinates[0]]
-            else:
-                self.insert[0] = self.r1Seq[self.read1_H6[1]:]
-                self.insert[2] = self.r1Qual[self.read1_H6[1]:]
+            #only gets insert.r1 if handle H5 or H6 present in construct
+            if self.read1_H6[1]:
+                if self.read1IntoH6prim:
+                    self.insert[0] = self.r1Seq[self.read1_H6[1]:self.read1IntoH6primCoordinates[0]]
+                    self.insert[2] = self.r1Qual[self.read1_H6[1]:self.read1IntoH6primCoordinates[0]]
+                else:
+                    self.insert[0] = self.r1Seq[self.read1_H6[1]:]
+                    self.insert[2] = self.r1Qual[self.read1_H6[1]:]
+            elif self.read1_H5[1]:
+                if self.read1IntoH6prim:
+                    self.insert[0] = self.r1Seq[self.read1_H5[1]+15:self.read1IntoH6primCoordinates[0]]
+                    self.insert[2] = self.r1Qual[self.read1_H5[1]+15:self.read1IntoH6primCoordinates[0]]
+                else:
+                    self.insert[0] = self.r1Seq[self.read1_H5[1]+15:]
+                    self.insert[2] = self.r1Qual[self.read1_H5[1]+15:]
                    
             #FIX INSERT FOR READ 2 
-            self.umi = self.r2Seq[self.read2_H7prim[1]:self.read2_H6[0]]
-            if self.read2IntoH6prim:
-                self.insert[1] = self.r2Seq[self.read2_H6[1]:self.read2IntoH6primCoordinates[0]]
-                self.insert[3] = self.r2Qual[self.read2_H6[1]:self.read2IntoH6primCoordinates[0]]                
-            else:
-                self.insert[1] = self.r2Seq[self.read2_H6[1]:]
-                self.insert[3] = self.r2Qual[self.read2_H6[1]:]                
-    
+            #only gets umi if handle H6 and H7prim present in construct and gap is len 8.
+            if self.read2_H6[1] and self.read2_H7prim[1] and self.read2_H6[0] - self.read2_H7prim[1]==8:
+                self.umi = self.r2Seq[self.read2_H7prim[1]:self.read2_H6[0]]
+                
+            #only gets insert.r2 if handle H6 or H7rpim present in construct
+            if self.read2_H6[1]:
+                if self.read2IntoH6prim:
+                    self.insert[1] = self.r2Seq[self.read2_H6[1]:self.read2IntoH6primCoordinates[0]]
+                    self.insert[3] = self.r2Qual[self.read2_H6[1]:self.read2IntoH6primCoordinates[0]]                
+                else:
+                    self.insert[1] = self.r2Seq[self.read2_H6[1]:]
+                    self.insert[3] = self.r2Qual[self.read2_H6[1]:]                
+            elif self.read2_H7prim[1]:
+                if self.read2IntoH6prim:
+                    self.insert[1] = self.r2Seq[self.read2_H7prim[1]+28:self.read2IntoH6primCoordinates[0]]
+                    self.insert[3] = self.r2Qual[self.read2_H7prim[1]+28:self.read2IntoH6primCoordinates[0]]                
+                else:
+                    self.insert[1] = self.r2Seq[self.read2_H7prim[1]+28:]
+                    self.insert[3] = self.r2Qual[self.read2_H7prim[1]+28:]                
+            
         if self.insert == [None,None,None,None]: self.insert = None
         return 0
 
@@ -876,15 +898,15 @@ class ReadPair(object):
             # GREPFRICK: Not necessary to overwrite since h1, h2 and h3 presence already known.
             self.construct = 'Missing '
             count = 0
-            if not self.read1_H1[1]: count += 1 #self.construct += ' ChIB_h1 '
-            if not self.read1_H2[1]: count += 1 #self.construct += ' ChIB_h2 '
-            if not self.read1_H3[1]: count += 1 #self.construct += ' ChIB_h3 '
-            if not self.read1_H4[1]: count += 1 #self.construct += ' ChIB_h4 '
-            if not self.read1_H5[1]: count += 1 #self.construct += ' ChIB_h5 '
-            if not self.read1_H6[1]: count += 1 #self.construct += ' ChIB_h6 '
-            if not self.read2_H6[1]: count += 1 #self.construct += ' ChIB_h6prim '
-            if not self.read2_H7prim[1]: count += 1 #self.construct += ' ChIB_h7 '
-            self.construct += str(count)+ ' handle(s)'
+            if not self.read1_H1[1]: self.construct += ' ChIB_h1 '
+            if not self.read1_H2[1]: self.construct += ' ChIB_h2 '
+            if not self.read1_H3[1]: self.construct += ' ChIB_h3 '
+            if not self.read1_H4[1]: self.construct += ' ChIB_h4 '
+            if not self.read1_H5[1]: self.construct += ' ChIB_h5 '
+            if not self.read1_H6[1]: self.construct += ' ChIB_h6 (5\')'
+            if not self.read2_H6[1]: self.construct += ' ChIB_h6 (3\')'
+            if not self.read2_H7prim[1]: self.construct += ' ChIB_h7 '
+
         if self.read1IntoH6prim or self.read2IntoH6prim:
             self.construct += ', is intoH6prim'  
         ### BARCODE INTEGRITY ###
@@ -908,4 +930,5 @@ class ReadPair(object):
             for barcode_type in self.chib_barcode_id.keys():
                 # If chib_barcode_id has 'None' as value for key, add one to 'bc_[key]' for missing category.
                 if not self.chib_barcode_id[barcode_type]: self.construct += ' bc_' + barcode_type + ' '
+        
         return ''
