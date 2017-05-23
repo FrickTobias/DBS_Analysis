@@ -4,7 +4,7 @@ class ReadPair(object):
     
     import dbs_analysis.misc as misc
     
-    def __init__(self, currentRead, header, sequenceR1, sequenceR2, qualR1, qualR2, direction, h1, h2, h3, constructType, dbsMatch, dbsSeq, dbsQual, mappingFlagR1, refNameR1, refPosR1, mapQR1, cigarR1, mappingFlagR2, refNameR2, refPosR2, mapQR2, cigarR2,insertSize, clusterId, annotations, fromFastqId, r1PositionInFile,r2PositionInFile,bamFilePos,individual_id,analysisfolder):
+    def __init__(self, currentRead, header, sequenceR1, sequenceR2, qualR1, qualR2, direction, h1, h2, h3, constructType, dbsMatch, dbsSeq, dbsQual, mappingFlagR1, refNameR1, refPosR1, mapQR1, cigarR1, mappingFlagR2, refNameR2, refPosR2, mapQR2, cigarR2,insertSize, clusterId, umi, annotations, fromFastqId, r1PositionInFile,r2PositionInFile,bamFilePos,individual_id,analysisfolder):
 
         # original read info
         # comming from the raw fastq files, except id that is a increasing int for each entry in fastq
@@ -48,7 +48,7 @@ class ReadPair(object):
         #self.construct = None
         self.insert= None # this is a list with the part of the sequence that are between the handles only used in dbs_handle_identifier then saved to various fastq files and used for mapping
         self.clusterId = clusterId # the cluster id that the read pair belong to after clustering inititally None
-        self.umi = None #Added for storing UMI in ChIB constructs //PH
+        self.umi = umi #Added for storing UMI in ChIB constructs //PH
         # graphical representation, not really used anymore, still kept here if needed in the future
         self.outstring = str(self.id)+''.join([' ' for i in range(10-len(str(self.id)))]),
         self.__str__ = self.outstring
@@ -513,7 +513,7 @@ class ReadPair(object):
                 else:
                     self.insert[1] = self.r2Seq[self.read2_H7prim[1]+28:]
                     self.insert[3] = self.r2Qual[self.read2_H7prim[1]+28:]                
-            
+
         if self.insert == [None,None,None,None]: self.insert = None
         return 0
 
