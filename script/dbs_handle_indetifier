@@ -81,7 +81,7 @@ def foreachRead(readpair):
 
         # Set some values needed for the foreachprocessed pair function for insert reporting
         readpair.dbs = readpair.clusterId
-        #readpair.dbsmatch = True
+        readpair.dbsmatch = True
 
     else:
         readpair.identifyDirection()
@@ -221,6 +221,7 @@ class FastqReader(object):
                         cigarR2 = None
                         insertSize = None
                         clusterId = None
+                        umi = None
                         annotations = {}
                         individual_id = None
                         
@@ -246,7 +247,7 @@ class FastqReader(object):
                             dbsMatch, dbsSeq, dbsQual,
                             mappingFlagR1, refNameR1, refPosR1, mapQR1, cigarR1,
                             mappingFlagR2, refNameR2, refPosR2, mapQR2, cigarR2,
-                            insertSize, clusterId, annotations, fromFastqId,r1PositionInFile,r2PositionInFile,bamFilePos,individual_id,self.analysisfolder
+                            insertSize, clusterId, umi, annotations, fromFastqId,r1PositionInFile,r2PositionInFile,bamFilePos,individual_id,self.analysisfolder
                             )
                         #pair.analysisfolder = self.analysisfolder
                         
