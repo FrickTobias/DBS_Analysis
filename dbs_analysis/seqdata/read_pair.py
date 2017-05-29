@@ -438,15 +438,29 @@ class ReadPair(object):
         self.read1IntoH6primCoordinates = self.matchSequence(self.r1Seq,revcomp(H6),missmatchesAllowed,startOfRead=(False, self.read1_H6[1]),breakAtFirstMatch=True)
         if self.read1IntoH6primCoordinates[0] != None:
             self.read1IntoH6prim = True
+            #If intoH6prim for read1 it should be into read2 dueto its prefix (H7prim-UMI-H6, 43 bp) 
+            # being shorter than H1-...-H6, 140 bp. 
+            
+            startOfHandle = self.read1IntoH6primCoordinates[0]+43-140
+            if startOfHandle > 0:
+                self.read2IntoH6prim = True
+                self.read2IntoH6primCoordinates = [startOfHandle, startOfHandle+15, 0]
+            
         
         #FIND HANDLES FOR READ 2
         self.read2_H7prim = self.matchSequence(self.r2Seq, revcomp(H7), missmatchesAllowed, startOfRead=True, breakAtFirstMatch=True)
         self.read2_H6 = self.matchSequence(self.r2Seq, H6, missmatchesAllowed, startOfRead=(False, self.read2_H7prim[1]), breakAtFirstMatch=True)
         
-        #Look if READ 2 goes into H6prim
-        self.read2IntoH6primCoordinates = self.matchSequence(self.r2Seq, revcomp(H6), missmatchesAllowed, startOfRead=(False, self.read2_H6[1]), breakAtFirstMatch=True)
-        if self.read2IntoH6primCoordinates[0] != None:
-            self.read1IntoH6prim = True
+        #Look if READ 2 goes into H6prim if no allready found for read 1.
+        if self.read2IntoH6prim != True:
+            self.read2IntoH6primCoordinates = self.matchSequence(self.r2Seq, revcomp(H6), missmatchesAllowed, startOfRead=(False, self.read2_H6[1]), breakAtFirstMatch=True)
+            if self.read2IntoH6primCoordinates[0] != None:
+                self.read2IntoH6prim = True
+                #If found in read 2 but not read 1 the handle might have been partially persent or just missed due to sequencing error.  
+                startOfHandle = self.read2IntoH6primCoordinates[0]+140-43
+                if not self.read1IntoH6prim and startOfHandle < len(self.r1Seq): 
+                    self.read1IntoH6prim = True
+                    self.read1IntoH6primCoordinates = [startOfHandle, startOfHandle+15, 0]
         
 #==============================================================================
 #         # Compability stuff. Unsure if needed but it is given in perfect match scenario for identifydirection.
@@ -474,7 +488,6 @@ class ReadPair(object):
         #r1q is read one quality
         #r2s is read two sequence
         #r2q is read two quality
-        
         if self.barcodes_intact and (self.read1_H6[1] or self.read1_H5[1]) and (self.read2_H6[1] or self.read2_H7prim[1]):
             #FIX INSERT FOR READ 1
             #only gets insert.r1 if handle H5 or H6 present in construct
@@ -514,6 +527,12 @@ class ReadPair(object):
                     self.insert[1] = self.r2Seq[self.read2_H7prim[1]+28:]
                     self.insert[3] = self.r2Qual[self.read2_H7prim[1]+28:]                
 
+            
+        if any(len(i)<10 for i in self.insert if i):
+            print self.header
+            print self.read1_H6[1], self.read1IntoH6primCoordinates[0], self.read2_H6[1], self.read2IntoH6primCoordinates[0]
+            
+        
         if self.insert == [None,None,None,None]: self.insert = None
         return 0
 
